@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SCAN-01**: AI extracts Thai tax invoice fields (vendor name, Tax ID, branch, date, items, VAT amount)
 - [x] **SCAN-02**: AI validates that uploaded receipt qualifies as valid tax invoice (8 required fields per Section 86/4)
 - [x] **SCAN-03**: AI auto-categorizes expenses into user-defined Thai categories
-- [ ] **SCAN-04**: AI auto-suggests WHT rate based on payment/service type
+- [x] **SCAN-04**: AI auto-suggests WHT rate based on payment/service type
 - [ ] **SCAN-05**: AI flags non-deductible expenses (Section 65 Tri) with explanation
 
 ### VAT Compliance (VAT)
@@ -119,7 +119,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCAN-01 | Phase 1 | Complete |
 | SCAN-02 | Phase 1 | Complete |
 | SCAN-03 | Phase 1 | Complete |
-| SCAN-04 | Phase 2 | Pending |
+| SCAN-04 | Phase 2 | Complete |
 | SCAN-05 | Phase 3 | Pending |
 | VAT-01 | Phase 1 | Complete |
 | VAT-02 | Phase 1 | Complete |

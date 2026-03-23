@@ -52,7 +52,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md -- Schema foundation, WHT calculator, contact model, filing deadline services
-- [ ] 02-02-PLAN.md -- AI WHT rate suggestion and transaction WHT field integration
+- [x] 02-02-PLAN.md -- AI WHT rate suggestion and transaction WHT field integration
 - [ ] 02-03-PLAN.md -- 50 Tawi certificate, PND3/PND53 report generation, batch download
 - [ ] 02-04-PLAN.md -- Tax invoice creation with Section 86/4 enforcement, contact management
 - [ ] 02-05-PLAN.md -- Filing deadline dashboard alerts, status tracking, WHT summary widget
@@ -69,7 +69,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 02-01: TBD
+- [x] 02-01: TBD
 - [ ] 02-02: TBD
 
 ### Phase 4: Export + Interoperability
