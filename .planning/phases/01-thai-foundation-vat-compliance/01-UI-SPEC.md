@@ -22,7 +22,7 @@ created: 2026-03-23
 | Preset | new-york, base color zinc, CSS variables enabled |
 | Component library | Radix UI primitives (12 packages installed) |
 | Icon library | Lucide React ^0.475.0 |
-| UI Font | Noto Sans Thai (via `next/font/google`, weights 400 + 600) |
+| UI Font | Noto Sans Thai (via `next/font/google`, weights 400 + 700) |
 | PDF Font | THSarabunNew (static TTF, Regular + Bold) |
 | Dark mode | Class-based via next-themes (existing) |
 
@@ -71,7 +71,7 @@ Exceptions: Touch targets on mobile for the PP30 "generate report" button use mi
 | Role | Size | Weight | Line Height | Font |
 |------|------|--------|-------------|------|
 | Body | 14px | 400 (regular) | 1.5 | Noto Sans Thai |
-| Label | 14px | 500 (medium) | 1.4 | Noto Sans Thai |
+| Label | 14px | 700 (bold) | 1.4 | Noto Sans Thai |
 | Heading | 20px | 700 (bold) | 1.2 | Noto Sans Thai |
 | Display | 24px | 700 (bold) | 1.2 | Noto Sans Thai |
 
@@ -263,9 +263,9 @@ All UI copy is in Thai (D-01). Revenue Department terminology per D-04.
 |---------|-----------|---------|
 | **Primary CTA (Setup)** | เริ่มใช้งาน | Final setup wizard step button |
 | **Primary CTA (Analyze)** | วิเคราะห์ | AI receipt scanning trigger |
-| **Primary CTA (Save)** | บันทึก | Save reviewed transaction |
+| **Primary CTA (Save)** | บันทึกรายการ | Save reviewed transaction |
 | **Primary CTA (Report)** | ออกรายงาน | Generate PP30 + tax reports |
-| **Primary CTA (Download)** | ดาวน์โหลด | Download generated PDF |
+| **Primary CTA (Download)** | ดาวน์โหลด PDF | Download generated PDF |
 | **Download All** | ดาวน์โหลดทั้งหมด | Download ZIP of all 3 reports |
 | **Empty state -- Dashboard VAT** | ยังไม่มีข้อมูลภาษี | Heading when no VAT transactions exist |
 | **Empty state -- body** | เริ่มต้นด้วยการอัปโหลดใบกำกับภาษีหรือใบเสร็จ | Next step instruction |
