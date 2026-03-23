@@ -7,13 +7,15 @@ import { VATSummaryCard } from "@/components/dashboard/vat-summary-card"
 import { VATThresholdAlert } from "@/components/dashboard/vat-threshold-alert"
 import { WelcomeWidget } from "@/components/dashboard/welcome-widget"
 import { WHTSummaryCard } from "@/components/dashboard/wht-summary-card"
+import { TaxSummarySection } from "@/components/dashboard/tax-summary-card"
+import { NonDeductibleSummaryCard } from "@/components/dashboard/non-deductible-summary"
 import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/auth"
 import config from "@/lib/config"
 import { getBusinessProfile } from "@/models/business-profile"
 import { getUnsortedFiles } from "@/models/files"
 import { getSettings } from "@/models/settings"
-import { getExpiringInvoices, getRevenueYTD, getUpcomingDeadlines, getVATSummary, getWHTSummary } from "@/models/stats"
+import { getExpiringInvoices, getRevenueYTD, getUpcomingDeadlines, getVATSummary, getWHTSummary, getCITEstimate, getNonDeductibleSummary } from "@/models/stats"
 import { TransactionFilters } from "@/models/transactions"
 import { Metadata } from "next"
 
@@ -32,13 +34,15 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const currentMonth = now.getMonth() + 1
   const currentYear = now.getFullYear()
 
-  const [profile, vatSummary, expiringInvoices, revenueYTD, whtSummary, upcomingDeadlines] = await Promise.all([
+  const [profile, vatSummary, expiringInvoices, revenueYTD, whtSummary, upcomingDeadlines, citEstimate, nonDeductibleSummary] = await Promise.all([
     getBusinessProfile(user.id),
     getVATSummary(user.id, filters),
     getExpiringInvoices(user.id),
     getRevenueYTD(user.id),
     getWHTSummary(user.id, currentMonth, currentYear),
     getUpcomingDeadlines(user.id),
+    getCITEstimate(user.id, currentYear, "annual"),
+    getNonDeductibleSummary(user.id, currentYear),
   ])
 
   // 144000000 satang = 1,440,000 THB = 80% of 1.8M threshold
@@ -122,6 +126,29 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           </div>
         </>
       )}
+
+      <Separator />
+      <div>
+        <h2 className="text-lg font-bold mt-4 mb-4">
+          {"\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\u0e20\u0e32\u0e29\u0e35\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e40\u0e14\u0e37\u0e2d\u0e19"}
+        </h2>
+        <TaxSummarySection
+          vatSummary={vatSummary}
+          whtSummary={whtSummary}
+          citEstimate={citEstimate}
+          nonDeductibleSummary={nonDeductibleSummary}
+          upcomingDeadlines={upcomingDeadlines}
+          defaultCurrency="THB"
+        />
+        {nonDeductibleSummary.totalFlagged > 0 && (
+          <div className="mt-4">
+            <NonDeductibleSummaryCard
+              summary={nonDeductibleSummary}
+              defaultCurrency="THB"
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
