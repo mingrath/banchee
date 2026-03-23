@@ -29,12 +29,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can view input VAT and output VAT tracked per transaction with correct 7% calculation (including pre-VAT extraction from VAT-inclusive amounts)
   4. User can generate a Purchase Tax Report, Sales Tax Report, and PP30 monthly VAT return data for any given month
   5. User receives a warning when input tax invoices approach the 6-month expiry for VAT credit claims, and gets notified when revenue approaches the 1.8M VAT registration threshold
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md -- Schema foundation, Thai localization, business profile model, tax calculator
+- [ ] 01-02-PLAN.md -- Setup wizard and THSarabunNew PDF font infrastructure
+- [ ] 01-03-PLAN.md -- AI Thai receipt scanning with Section 86/4 validation
+- [ ] 01-04-PLAN.md -- VAT dashboard widgets, expiry warnings, threshold alerts
+- [ ] 01-05-PLAN.md -- PP30 + tax report PDF generation, settings, transaction edit
 
 ### Phase 2: WHT + Tax Invoices + Filing Deadlines
 **Goal**: A Thai SME owner can manage withholding tax on payments, create and issue tax invoices, and never miss a filing deadline
@@ -88,7 +90,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Thai Foundation + VAT Compliance | 0/3 | Not started | - |
+| 1. Thai Foundation + VAT Compliance | 0/5 | Planned | - |
 | 2. WHT + Tax Invoices + Filing Deadlines | 0/3 | Not started | - |
 | 3. CIT + Tax Intelligence + Dashboard | 0/2 | Not started | - |
 | 4. Export + Interoperability | 0/1 | Not started | - |
