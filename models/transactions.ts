@@ -28,6 +28,10 @@ export type TransactionData = {
   merchantTaxId?: string | null
   merchantBranch?: string | null
   documentNumber?: string | null
+  whtRate?: number | null
+  whtAmount?: number | null
+  whtType?: string | null
+  contactId?: string | null
   [key: string]: unknown
 }
 
@@ -206,6 +210,10 @@ const FIRST_CLASS_COLUMNS = new Set([
   "merchantTaxId",
   "merchantBranch",
   "documentNumber",
+  "whtRate",
+  "whtAmount",
+  "whtType",
+  "contactId",
 ])
 
 const splitTransactionDataExtraFields = async (
