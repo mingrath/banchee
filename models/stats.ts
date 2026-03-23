@@ -491,6 +491,197 @@ export type DeadlineWithStatus = {
   filedAt: Date | null
 }
 
+// --- CIT Stats ---
+
+import { getBusinessProfile } from "@/models/business-profile"
+import {
+  calculateSMECIT,
+  calculateFlatCIT,
+  isSMEEligible,
+  calculateEntertainmentCap,
+  calculateCharitableCap,
+  type CITResult,
+  type EntertainmentCapResult,
+  type CharitableCapResult,
+} from "@/services/tax-calculator"
+
+export type CITEstimate = {
+  totalIncome: number       // satang
+  totalExpenses: number     // satang
+  nonDeductibleTotal: number // satang
+  netProfit: number         // satang (income - expenses + nonDeductible)
+  isEligible: boolean
+  citResult: CITResult
+  entertainmentCap: EntertainmentCapResult
+  charitableCap: CharitableCapResult
+}
+
+export const getCITEstimate = cache(
+  async (userId: string, year: number, periodType: "annual" | "half-year"): Promise<CITEstimate> => {
+    const profile = await getBusinessProfile(userId)
+
+    // Compute date range based on fiscal year
+    const fyStart = profile.fiscalYearStart // 1-12
+    const startDate = new Date(year, fyStart - 1, 1)
+    let endDate: Date
+    if (periodType === "annual") {
+      endDate = new Date(year + 1, fyStart - 1, 1)
+    } else {
+      // half-year: first 6 months of fiscal year, handle wrap-around
+      const endMonth = fyStart - 1 + 6
+      if (endMonth > 11) {
+        endDate = new Date(year + 1, endMonth - 12, 1)
+      } else {
+        endDate = new Date(year, endMonth, 1)
+      }
+    }
+
+    const dateFilter = { gte: startDate, lt: endDate }
+
+    const [
+      incomeResult,
+      expenseResult,
+      nonDeductibleResult,
+      entertainmentResult,
+      charitableResult,
+    ] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { userId, type: "income", issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { userId, type: "expense", issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { userId, type: "expense", isNonDeductible: true, issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { userId, type: "expense", nonDeductibleCategory: "entertainment", issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { userId, type: "expense", nonDeductibleCategory: "charitable", issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+    ])
+
+    const totalIncome = incomeResult._sum.total || 0
+    const totalExpenses = expenseResult._sum.total || 0
+    const nonDeductibleTotal = nonDeductibleResult._sum.total || 0
+    const entertainmentTotal = entertainmentResult._sum.total || 0
+    const charitableTotal = charitableResult._sum.total || 0
+
+    // Net profit: income - expenses + non-deductible (add back non-deductible)
+    const netProfit = totalIncome - totalExpenses + nonDeductibleTotal
+
+    // SME eligibility check
+    const isEligible = isSMEEligible(profile.paidUpCapital, totalIncome)
+
+    // CIT calculation
+    const citResult = isEligible
+      ? calculateSMECIT(Math.max(0, netProfit))
+      : calculateFlatCIT(Math.max(0, netProfit))
+
+    // Cap calculations
+    const entertainmentCap = calculateEntertainmentCap(entertainmentTotal, totalIncome, profile.paidUpCapital)
+    const charitableCap = calculateCharitableCap(charitableTotal, netProfit)
+
+    return {
+      totalIncome,
+      totalExpenses,
+      nonDeductibleTotal,
+      netProfit,
+      isEligible,
+      citResult,
+      entertainmentCap,
+      charitableCap,
+    }
+  }
+)
+
+// --- Non-Deductible Summary ---
+
+export type NonDeductibleSummary = {
+  totalFlagged: number        // count
+  totalAmount: number         // satang
+  entertainmentAmount: number // satang
+  entertainmentCap: EntertainmentCapResult
+  charitableAmount: number    // satang
+  charitableCap: CharitableCapResult
+  byCategory: { category: string; count: number; amount: number }[]
+}
+
+export const getNonDeductibleSummary = cache(
+  async (userId: string, year: number): Promise<NonDeductibleSummary> => {
+    const profile = await getBusinessProfile(userId)
+
+    // Compute YTD date range from fiscal year start
+    const fyStart = profile.fiscalYearStart
+    const startDate = new Date(year, fyStart - 1, 1)
+    const endDate = new Date(year + 1, fyStart - 1, 1)
+    const dateFilter = { gte: startDate, lt: endDate }
+
+    const [incomeResult, groupedResult] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { userId, type: "income", issuedAt: dateFilter },
+        _sum: { total: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ["nonDeductibleCategory"],
+        where: { userId, isNonDeductible: true, issuedAt: dateFilter },
+        _sum: { total: true },
+        _count: true,
+      }),
+    ])
+
+    const totalIncome = incomeResult._sum.total || 0
+
+    let totalFlagged = 0
+    let totalAmount = 0
+    let entertainmentAmount = 0
+    let charitableAmount = 0
+    const byCategory: { category: string; count: number; amount: number }[] = []
+
+    for (const group of groupedResult) {
+      const cat = group.nonDeductibleCategory || "unknown"
+      const amount = group._sum.total || 0
+      const count = group._count
+
+      totalFlagged += count
+      totalAmount += amount
+
+      if (cat === "entertainment") entertainmentAmount = amount
+      if (cat === "charitable") charitableAmount = amount
+
+      byCategory.push({ category: cat, count, amount })
+    }
+
+    // Compute net profit for charitable cap (simplified: income - expenses)
+    const expenseResult = await prisma.transaction.aggregate({
+      where: { userId, type: "expense", issuedAt: dateFilter },
+      _sum: { total: true },
+    })
+    const netProfit = totalIncome - (expenseResult._sum.total || 0) + totalAmount
+
+    const entertainmentCap = calculateEntertainmentCap(entertainmentAmount, totalIncome, profile.paidUpCapital)
+    const charitableCap = calculateCharitableCap(charitableAmount, netProfit)
+
+    return {
+      totalFlagged,
+      totalAmount,
+      entertainmentAmount,
+      entertainmentCap,
+      charitableAmount,
+      charitableCap,
+      byCategory,
+    }
+  }
+)
+
+// --- Filing Deadline with Status ---
+
 export const getUpcomingDeadlines = cache(
   async (userId: string): Promise<DeadlineWithStatus[]> => {
     const now = new Date()
