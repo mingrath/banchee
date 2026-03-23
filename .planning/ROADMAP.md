@@ -66,11 +66,12 @@ Plans:
   2. AI flags non-deductible expenses (Section 65 Tri) with explanation when scanning receipts, helping users understand which expenses reduce taxable income
   3. User can create credit notes and debit notes for invoice corrections
   4. User can view a monthly tax summary dashboard showing VAT payable, WHT withheld, upcoming deadlines, and income/expense summary with profit calculation
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [x] 02-01: TBD
-- [x] 02-02: TBD
+- [ ] 03-01-PLAN.md -- Schema + CIT calculator + AI 65 tri flagging + non-deductible validator + business profile capital
+- [ ] 03-02-PLAN.md -- CIT report app (PND50/PND51) + credit/debit note app
+- [ ] 03-03-PLAN.md -- Monthly tax summary dashboard + non-deductible summary widgets
 
 ### Phase 4: Export + Interoperability
 **Goal**: A Thai SME owner can export all tax data in formats ready for Revenue Department e-filing, FlowAccount import, or handoff to an accountant
@@ -94,5 +95,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Thai Foundation + VAT Compliance | 5/5 | Complete | 2026-03-23 |
 | 2. WHT + Tax Invoices + Filing Deadlines | 5/5 | Complete   | 2026-03-23 |
-| 3. CIT + Tax Intelligence + Dashboard | 0/2 | Not started | - |
+| 3. CIT + Tax Intelligence + Dashboard | 0/3 | Not started | - |
 | 4. Export + Interoperability | 0/1 | Not started | - |
