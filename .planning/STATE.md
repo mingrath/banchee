@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-23T12:59:24.973Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-23T14:29:20.444Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 10
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes -- zero accountant needed, zero tax penalties.
-**Current focus:** Phase 01 — thai-foundation-vat-compliance
+**Current focus:** Phase 02 — wht-tax-invoices-filing-deadlines
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
+Phase: 02 (wht-tax-invoices-filing-deadlines) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: Not started
 | Phase 01 P03 | 4min | 2 tasks | 6 files |
 | Phase 01 P04 | 6min | 2 tasks | 8 files |
 | Phase 01 P05 | 17min | 3 tasks | 19 files |
+| Phase 02 P01 | 8min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Recent decisions affecting current work:
 - [Phase 01]: PDF generation is client-side via pdf() in report-preview.tsx to avoid server memory pressure
 - [Phase 01]: VAT fields added to FIRST_CLASS_COLUMNS set in models/transactions.ts for correct Prisma column passthrough
 - [Phase 01]: Business profile form isolated into components/settings/business-profile-form.tsx for maintainability
+- [Phase 02]: WHT uses basis-point convention (300=3%) matching VAT_RATE for consistency
+- [Phase 02]: Contact model uses upsert on userId+taxId+branch composite unique to prevent duplicates
+- [Phase 02]: Holiday data is year-keyed via getHolidaysForYear -- adding years needs only a new case
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T12:59:24.970Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-wht-tax-invoices-filing-deadlines/02-CONTEXT.md
+Last session: 2026-03-23T14:29:20.442Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None

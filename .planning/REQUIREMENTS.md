@@ -34,8 +34,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Withholding Tax (WHT)
 
-- [ ] **WHT-01**: WHT rate selection per payment type (1% transport, 2% advertising, 3% services/professional, 5% rent)
-- [ ] **WHT-02**: Auto-calculate WHT on pre-VAT amount (not total — critical correctness requirement)
+- [x] **WHT-01**: WHT rate selection per payment type (1% transport, 2% advertising, 3% services/professional, 5% rent)
+- [x] **WHT-02**: Auto-calculate WHT on pre-VAT amount (not total — critical correctness requirement)
 - [ ] **WHT-03**: Generate WHT certificate (50 Tawi / หนังสือรับรองหัก ณ ที่จ่าย) as PDF with all 11 required fields
 - [ ] **WHT-04**: Generate PND3 (ภ.ง.ด.3) monthly WHT report for payments to individuals
 - [ ] **WHT-05**: Generate PND53 (ภ.ง.ด.53) monthly WHT report for payments to companies
@@ -51,14 +51,14 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **INV-01**: Create Thai tax invoices (ใบกำกับภาษี) with all 8 required fields per Section 86/4
 - [ ] **INV-02**: Sequential document numbering per document type
 - [ ] **INV-03**: Credit note and debit note creation for invoice corrections
-- [ ] **INV-04**: Contact/vendor management with Tax ID and branch number storage
+- [x] **INV-04**: Contact/vendor management with Tax ID and branch number storage
 
 ### Filing & Deadlines (FILE)
 
-- [ ] **FILE-01**: Thai tax calendar showing all filing deadlines (PP30 by 15th/23rd, PND3/53 by 7th/15th)
+- [x] **FILE-01**: Thai tax calendar showing all filing deadlines (PP30 by 15th/23rd, PND3/53 by 7th/15th)
 - [ ] **FILE-02**: Filing deadline reminders (visual alerts on dashboard)
 - [ ] **FILE-03**: Filing status tracker per form per month (pending/filed/overdue)
-- [ ] **FILE-04**: Thai public holiday awareness for deadline adjustment
+- [x] **FILE-04**: Thai public holiday awareness for deadline adjustment
 
 ### Reports & Export (RPT)
 
@@ -128,8 +128,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | VAT-05 | Phase 1 | Complete |
 | VAT-06 | Phase 1 | Complete |
 | VAT-07 | Phase 1 | Complete |
-| WHT-01 | Phase 2 | Pending |
-| WHT-02 | Phase 2 | Pending |
+| WHT-01 | Phase 2 | Complete |
+| WHT-02 | Phase 2 | Complete |
 | WHT-03 | Phase 2 | Pending |
 | WHT-04 | Phase 2 | Pending |
 | WHT-05 | Phase 2 | Pending |
@@ -139,11 +139,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | INV-01 | Phase 2 | Pending |
 | INV-02 | Phase 2 | Pending |
 | INV-03 | Phase 3 | Pending |
-| INV-04 | Phase 2 | Pending |
-| FILE-01 | Phase 2 | Pending |
+| INV-04 | Phase 2 | Complete |
+| FILE-01 | Phase 2 | Complete |
 | FILE-02 | Phase 2 | Pending |
 | FILE-03 | Phase 2 | Pending |
-| FILE-04 | Phase 2 | Pending |
+| FILE-04 | Phase 2 | Complete |
 | RPT-01 | Phase 3 | Pending |
 | RPT-02 | Phase 3 | Pending |
 | RPT-03 | Phase 4 | Pending |
