@@ -66,3 +66,75 @@ export function computeVATOnSubtotal(subtotal: number, vatRate: number = VAT_RAT
 export function formatSatangToDisplay(satang: number): number {
   return satang / 100
 }
+
+// ─── WHT (Withholding Tax) ────────────────────────────────────
+
+/**
+ * WHT rate constants (basis points, matching VAT_RATE convention).
+ * 100 basis points = 1%.
+ */
+export const WHT_RATES = {
+  TRANSPORT: 100,    // 1%
+  INSURANCE: 100,    // 1%
+  ADVERTISING: 200,  // 2%
+  SERVICE: 300,      // 3% (most common)
+  ROYALTY: 300,      // 3%
+  RENT: 500,         // 5%
+  DIVIDEND: 1000,    // 10%
+} as const
+
+export const WHT_RATE_OPTIONS = [
+  { rate: 100,  label: "1% - ค่าขนส่ง / เบี้ยประกันวินาศภัย", types: ["transport", "insurance"] },
+  { rate: 200,  label: "2% - ค่าโฆษณา", types: ["advertising"] },
+  { rate: 300,  label: "3% - ค่าบริการ / ค่าจ้างทำของ / ค่าลิขสิทธิ์", types: ["service", "royalty", "commission"] },
+  { rate: 500,  label: "5% - ค่าเช่า / รางวัล", types: ["rent", "prize"] },
+  { rate: 1000, label: "10% - เงินปันผล", types: ["dividend"] },
+] as const
+
+/** WHT threshold: 1,000 THB = 100,000 satang */
+export const WHT_THRESHOLD = 100000
+
+export type WHTResult = {
+  subtotal: number   // pre-VAT base (satang)
+  whtAmount: number  // WHT withheld (satang)
+  whtRate: number    // rate in basis points
+  netPayable: number // total - whtAmount
+}
+
+/**
+ * Calculate WHT on a pre-VAT subtotal.
+ *
+ * CRITICAL: WHT is calculated on the pre-VAT amount (subtotal), NEVER on VAT-inclusive total.
+ * If subtotal < WHT_THRESHOLD (1,000 THB), WHT is zero per Revenue Dept rules.
+ *
+ * @param subtotal - pre-VAT amount in satang
+ * @param whtRate - rate in basis points (300 = 3%)
+ * @param vatInclusiveTotal - VAT-inclusive total for netPayable calculation
+ */
+export function calculateWHT(
+  subtotal: number,
+  whtRate: number,
+  vatInclusiveTotal: number
+): WHTResult {
+  if (subtotal === 0 || whtRate === 0 || subtotal < WHT_THRESHOLD) {
+    return { subtotal, whtAmount: 0, whtRate, netPayable: vatInclusiveTotal }
+  }
+  const whtAmount = Math.round(subtotal * whtRate / 10000)
+  return { subtotal, whtAmount, whtRate, netPayable: vatInclusiveTotal - whtAmount }
+}
+
+/**
+ * Compute WHT from a VAT-inclusive total.
+ *
+ * Chains extractVATFromTotal (to get pre-VAT base) then calculateWHT.
+ * This is the primary entry point for receipt scanning where total is known.
+ */
+export function computeWHTFromTotal(
+  totalInclVAT: number,
+  whtRate: number,
+  vatRate: number = VAT_RATE
+): WHTResult & VATResult {
+  const vat = extractVATFromTotal(totalInclVAT, vatRate)
+  const wht = calculateWHT(vat.subtotal, whtRate, totalInclVAT)
+  return { ...vat, ...wht }
+}
