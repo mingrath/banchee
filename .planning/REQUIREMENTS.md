@@ -12,7 +12,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **I18N-01**: UI displays in Thai with official Revenue Department tax terminology
 - [ ] **I18N-02**: Buddhist Era (พ.ศ.) date display alongside Gregorian dates
 - [ ] **I18N-03**: Thai number/currency formatting (฿ prefix, comma separators, 2 decimal places)
-- [ ] **I18N-04**: Thai font support in all generated PDF documents (THSarabunNew)
+- [x] **I18N-04**: Thai font support in all generated PDF documents (THSarabunNew)
 
 ### AI Receipt Scanning (SCAN)
 
@@ -70,9 +70,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Business Profile (BIZ)
 
-- [ ] **BIZ-01**: Business profile with company name, Tax ID, branch, address (Thai)
-- [ ] **BIZ-02**: VAT registration status toggle (registered/not registered) — controls which features are active
-- [ ] **BIZ-03**: Accounting period configuration (calendar year default)
+- [x] **BIZ-01**: Business profile with company name, Tax ID, branch, address (Thai)
+- [x] **BIZ-02**: VAT registration status toggle (registered/not registered) — controls which features are active
+- [x] **BIZ-03**: Accounting period configuration (calendar year default)
 - [ ] **BIZ-04**: Base currency set to THB with multi-currency support for foreign transactions
 
 ## v2 Requirements
@@ -115,7 +115,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | I18N-01 | Phase 1 | Pending |
 | I18N-02 | Phase 1 | Pending |
 | I18N-03 | Phase 1 | Pending |
-| I18N-04 | Phase 1 | Pending |
+| I18N-04 | Phase 1 | Complete |
 | SCAN-01 | Phase 1 | Pending |
 | SCAN-02 | Phase 1 | Pending |
 | SCAN-03 | Phase 1 | Pending |
@@ -149,9 +149,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | RPT-03 | Phase 4 | Pending |
 | RPT-04 | Phase 4 | Pending |
 | RPT-05 | Phase 4 | Pending |
-| BIZ-01 | Phase 1 | Pending |
-| BIZ-02 | Phase 1 | Pending |
-| BIZ-03 | Phase 1 | Pending |
+| BIZ-01 | Phase 1 | Complete |
+| BIZ-02 | Phase 1 | Complete |
+| BIZ-03 | Phase 1 | Complete |
 | BIZ-04 | Phase 1 | Pending |
 
 **Coverage:**
