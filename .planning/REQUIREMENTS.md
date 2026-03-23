@@ -155,10 +155,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | BIZ-04 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 39
-- Unmapped: 0 ✓
+- v1 requirements: 41 total
+- Mapped to phases: 41
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-23*
-*Last updated: 2026-03-23 after initial definition*
+*Last updated: 2026-03-23 after roadmap creation*
