@@ -1,0 +1,6 @@
+export const manifest = {
+  code: "tax-invoice",
+  name: "\u0e43\u0e1a\u0e01\u0e33\u0e01\u0e31\u0e1a\u0e20\u0e32\u0e29\u0e35",
+  description: "\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e43\u0e1a\u0e01\u0e33\u0e01\u0e31\u0e1a\u0e20\u0e32\u0e29\u0e35\u0e15\u0e32\u0e21 Section 86/4",
+  icon: "Receipt",
+}
