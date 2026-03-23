@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md -- Schema foundation, Thai localization, business profile model, tax calculator
 - [x] 01-02-PLAN.md -- Setup wizard and THSarabunNew PDF font infrastructure
-- [ ] 01-03-PLAN.md -- AI Thai receipt scanning with Section 86/4 validation
+- [x] 01-03-PLAN.md -- AI Thai receipt scanning with Section 86/4 validation
 - [ ] 01-04-PLAN.md -- VAT dashboard widgets, expiry warnings, threshold alerts
 - [ ] 01-05-PLAN.md -- PP30 + tax report PDF generation, settings, transaction edit
 
