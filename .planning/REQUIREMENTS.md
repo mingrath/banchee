@@ -26,11 +26,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **VAT-01**: Track input VAT (ภาษีซื้อ) and output VAT (ภาษีขาย) per transaction
 - [x] **VAT-02**: Auto-calculate 7% VAT with correct base amount (pre-VAT from /107 formula when price includes VAT)
-- [ ] **VAT-03**: Auto-detect VAT registration requirement based on revenue threshold (1.8M baht)
+- [x] **VAT-03**: Auto-detect VAT registration requirement based on revenue threshold (1.8M baht)
 - [ ] **VAT-04**: Generate Purchase Tax Report (รายงานภาษีซื้อ) with all required columns
 - [ ] **VAT-05**: Generate Sales Tax Report (รายงานภาษีขาย) with all required columns
 - [ ] **VAT-06**: Generate PP30 (ภ.พ.30) monthly VAT return data
-- [ ] **VAT-07**: Flag input tax invoices approaching 6-month expiry for VAT credit claims
+- [x] **VAT-07**: Flag input tax invoices approaching 6-month expiry for VAT credit claims
 
 ### Withholding Tax (WHT)
 
@@ -123,11 +123,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCAN-05 | Phase 3 | Pending |
 | VAT-01 | Phase 1 | Complete |
 | VAT-02 | Phase 1 | Complete |
-| VAT-03 | Phase 1 | Pending |
+| VAT-03 | Phase 1 | Complete |
 | VAT-04 | Phase 1 | Pending |
 | VAT-05 | Phase 1 | Pending |
 | VAT-06 | Phase 1 | Pending |
-| VAT-07 | Phase 1 | Pending |
+| VAT-07 | Phase 1 | Complete |
 | WHT-01 | Phase 2 | Pending |
 | WHT-02 | Phase 2 | Pending |
 | WHT-03 | Phase 2 | Pending |
