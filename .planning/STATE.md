@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-23T16:33:05.415Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-23T17:13:00.273Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 11
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes -- zero accountant needed, zero tax penalties.
-**Current focus:** Phase 02 — wht-tax-invoices-filing-deadlines
+**Current focus:** Phase 03 — cit-tax-intelligence-dashboard
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (cit-tax-intelligence-dashboard) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Plan: Not started
 | Phase 02 P04 | 6min | 2 tasks | 10 files |
 | Phase 02 P03 | 4min | 2 tasks | 9 files |
 | Phase 02 P05 | 25min | 3 tasks | 5 files |
+| Phase 03 P01 | 11min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Filing deadline status toggle server action placed in components/dashboard/ to keep widget mutations co-located
 - [Phase 02]: getUpcomingDeadlines fetches previous month deadlines as Thai tax filing is always for the prior period
 - [Phase 02]: DeadlineWithStatus computed in stats model layer to keep dashboard page lean
+- [Phase 03]: CIT uses satang integer arithmetic matching VAT/WHT convention (Math.round for each tier)
+- [Phase 03]: Non-deductible validator uses heuristic-first pattern: category+keyword checks override AI flags
+- [Phase 03]: paidUpCapital stored in satang in Settings model, form input in baht with *100 conversion
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T16:33:05.413Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-cit-tax-intelligence-dashboard/03-CONTEXT.md
+Last session: 2026-03-23T17:13:00.271Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

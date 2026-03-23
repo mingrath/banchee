@@ -20,7 +20,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SCAN-02**: AI validates that uploaded receipt qualifies as valid tax invoice (8 required fields per Section 86/4)
 - [x] **SCAN-03**: AI auto-categorizes expenses into user-defined Thai categories
 - [x] **SCAN-04**: AI auto-suggests WHT rate based on payment/service type
-- [ ] **SCAN-05**: AI flags non-deductible expenses (Section 65 Tri) with explanation
+- [x] **SCAN-05**: AI flags non-deductible expenses (Section 65 Tri) with explanation
 
 ### VAT Compliance (VAT)
 
@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Corporate Income Tax (CIT)
 
-- [ ] **CIT-01**: SME tax rate calculation (0% on first 300K, 15% on 300K-3M, 20% above 3M)
+- [x] **CIT-01**: SME tax rate calculation (0% on first 300K, 15% on 300K-3M, 20% above 3M)
 - [ ] **CIT-02**: PND50 (ภ.ง.ด.50) annual CIT data helper — calculate from income/expense totals
 - [ ] **CIT-03**: PND51 (ภ.ง.ด.51) half-year estimated CIT data helper
 
@@ -120,7 +120,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCAN-02 | Phase 1 | Complete |
 | SCAN-03 | Phase 1 | Complete |
 | SCAN-04 | Phase 2 | Complete |
-| SCAN-05 | Phase 3 | Pending |
+| SCAN-05 | Phase 3 | Complete |
 | VAT-01 | Phase 1 | Complete |
 | VAT-02 | Phase 1 | Complete |
 | VAT-03 | Phase 1 | Complete |
@@ -133,7 +133,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | WHT-03 | Phase 2 | Complete |
 | WHT-04 | Phase 2 | Complete |
 | WHT-05 | Phase 2 | Complete |
-| CIT-01 | Phase 3 | Pending |
+| CIT-01 | Phase 3 | Complete |
 | CIT-02 | Phase 3 | Pending |
 | CIT-03 | Phase 3 | Pending |
 | INV-01 | Phase 2 | Complete |

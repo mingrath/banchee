@@ -69,7 +69,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Schema + CIT calculator + AI 65 tri flagging + non-deductible validator + business profile capital
+- [x] 03-01-PLAN.md -- Schema + CIT calculator + AI 65 tri flagging + non-deductible validator + business profile capital
 - [ ] 03-02-PLAN.md -- CIT report app (PND50/PND51) + credit/debit note app
 - [ ] 03-03-PLAN.md -- Monthly tax summary dashboard + non-deductible summary widgets
 
