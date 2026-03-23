@@ -5,6 +5,7 @@ import { AnalyzeAttachment, loadAttachmentsForAI } from "@/ai/attachments"
 import { buildLLMPrompt } from "@/ai/prompt"
 import { fieldsToJsonSchema } from "@/ai/schema"
 import { correctBuddhistEraDate, validateTaxInvoiceFields } from "@/ai/validators/tax-invoice-validator"
+import { validateNonDeductibleExpense } from "@/ai/validators/non-deductible-validator"
 import { transactionFormSchema } from "@/forms/transactions"
 import { ActionState } from "@/lib/actions"
 import { getCurrentUser, isAiBalanceExhausted, isSubscriptionExpired } from "@/lib/auth"
@@ -90,6 +91,15 @@ export async function analyzeFileAction(
     // Validate against Section 86/4 requirements
     const validation = validateTaxInvoiceFields(output as Record<string, unknown>)
     ;(output as Record<string, unknown>)._validation = validation
+
+    // Validate non-deductible expense status (Section 65 tri)
+    const nonDeductibleFlag = validateNonDeductibleExpense(output as Record<string, unknown>)
+    if (nonDeductibleFlag.isNonDeductible) {
+      const outputRecord = output as Record<string, unknown>
+      outputRecord.is_non_deductible = true
+      outputRecord.non_deductible_reason = nonDeductibleFlag.reason
+      outputRecord.non_deductible_category = nonDeductibleFlag.category
+    }
   }
 
   return results

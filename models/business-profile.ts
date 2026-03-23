@@ -9,6 +9,7 @@ export const BUSINESS_PROFILE_CODES = [
   "biz_vat_registered",
   "biz_vat_reg_date",
   "biz_fiscal_year_start",
+  "biz_paid_up_capital",
 ] as const
 
 export type BusinessProfileCode = (typeof BUSINESS_PROFILE_CODES)[number]
@@ -21,6 +22,7 @@ export type BusinessProfile = {
   vatRegistered: boolean
   vatRegDate: string | null
   fiscalYearStart: number
+  paidUpCapital: number // satang, 0 = not set
 }
 
 const FIELD_TO_CODE: Record<keyof BusinessProfile, BusinessProfileCode> = {
@@ -31,6 +33,7 @@ const FIELD_TO_CODE: Record<keyof BusinessProfile, BusinessProfileCode> = {
   vatRegistered: "biz_vat_registered",
   vatRegDate: "biz_vat_reg_date",
   fiscalYearStart: "biz_fiscal_year_start",
+  paidUpCapital: "biz_paid_up_capital",
 }
 
 const DEFAULT_PROFILE: BusinessProfile = {
@@ -41,6 +44,7 @@ const DEFAULT_PROFILE: BusinessProfile = {
   vatRegistered: false,
   vatRegDate: null,
   fiscalYearStart: 1,
+  paidUpCapital: 0,
 }
 
 /**
@@ -65,6 +69,7 @@ export const getBusinessProfile = cache(async (userId: string): Promise<Business
     vatRegistered: settingsMap.get("biz_vat_registered") === "true",
     vatRegDate: settingsMap.get("biz_vat_reg_date") || DEFAULT_PROFILE.vatRegDate,
     fiscalYearStart: parseInt(settingsMap.get("biz_fiscal_year_start") || "1", 10),
+    paidUpCapital: parseInt(settingsMap.get("biz_paid_up_capital") || "0", 10),
   }
 })
 

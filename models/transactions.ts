@@ -32,6 +32,9 @@ export type TransactionData = {
   whtAmount?: number | null
   whtType?: string | null
   contactId?: string | null
+  isNonDeductible?: boolean | null
+  nonDeductibleReason?: string | null
+  nonDeductibleCategory?: string | null
   [key: string]: unknown
 }
 
@@ -214,6 +217,9 @@ const FIRST_CLASS_COLUMNS = new Set([
   "whtAmount",
   "whtType",
   "contactId",
+  "isNonDeductible",
+  "nonDeductibleReason",
+  "nonDeductibleCategory",
 ])
 
 const splitTransactionDataExtraFields = async (

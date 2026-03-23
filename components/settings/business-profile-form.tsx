@@ -134,6 +134,22 @@ export function BusinessProfileForm({
         )}
 
         <div className="space-y-2">
+          <Label htmlFor="paidUpCapital">ทุนจดทะเบียนชำระแล้ว (บาท)</Label>
+          <Input
+            id="paidUpCapital"
+            name="paidUpCapital"
+            type="number"
+            step="1"
+            min="0"
+            defaultValue={businessProfile.paidUpCapital > 0 ? businessProfile.paidUpCapital / 100 : ""}
+            placeholder="5,000,000"
+          />
+          <p className="text-xs text-muted-foreground">
+            ใช้สำหรับคำนวณสิทธิ์ SME (ไม่เกิน 5 ล้านบาท) และเพดานค่ารับรอง
+          </p>
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="fiscalYearStart">รอบบัญชี (เดือนเริ่มต้น)</Label>
           <Select name="fiscalYearStart" defaultValue={String(businessProfile.fiscalYearStart)}>
             <SelectTrigger>

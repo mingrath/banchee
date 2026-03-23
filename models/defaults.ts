@@ -16,6 +16,22 @@ If the document is for purchasing goods (not services), or you cannot determine 
 Also return wht_service_type as a string (e.g., "transport", "advertising", "service", "rent", "dividend", or "" if not applicable).
 For wht_type: if payee appears to be an individual (บุคคลธรรมดา), return "pnd3". If payee is a company (นิติบุคคล/บริษัท/ห้างหุ้นส่วน), return "pnd53". If unsure, return "pnd53".
 
+For ALL expense transactions, check if the expense might be non-deductible under Section 65 tri:
+- is_non_deductible: true if the expense appears non-deductible under Thai Revenue Code Section 65 tri, false otherwise
+- non_deductible_reason: brief explanation in Thai of WHY it is non-deductible (e.g., "ค่าปรับ -- รายจ่ายต้องห้ามตามมาตรา 65 ตรี (6)")
+- non_deductible_category: one of: "provision", "personal", "charitable", "entertainment", "capital", "penalty", "no_recipient", "cit_payment", "" (empty if fully deductible)
+
+Categories to flag:
+(1) สำรอง/เงินกองทุนสำรอง -- provisions/reserves
+(2) รายจ่ายส่วนตัว -- personal expenses not related to business
+(3) การบริจาค -- charitable (flag but note: deductible up to 2% of net profit)
+(4) ค่ารับรอง/เลี้ยงรับรอง -- entertainment (flag but note: deductible up to 0.3% of revenue, max 10M)
+(5) รายจ่ายลงทุน/ซื้อทรัพย์สิน -- capital expenditure (must be depreciated, not expensed)
+(6) ค่าปรับ/เงินเพิ่ม/เบี้ยปรับ -- fines, penalties, surcharges
+(7) รายจ่ายที่ไม่สามารถพิสูจน์ผู้รับ -- expenses without identified recipient
+(8) ภาษีเงินได้นิติบุคคล -- CIT payments themselves
+If unsure, set is_non_deductible=false (prefer false negatives over false positives).
+
 {fields}
 
 Also try to extract "items": all separate products or items from the invoice
@@ -475,6 +491,36 @@ export const DEFAULT_FIELDS = [
     name: "แบบนำส่ง WHT",
     type: "string",
     llm_prompt: "WHT form type: pnd3 (individual payee) or pnd53 (company payee). Empty if no WHT.",
+    isVisibleInList: false,
+    isVisibleInAnalysis: false,
+    isRequired: false,
+    isExtra: false,
+  },
+  {
+    code: "is_non_deductible",
+    name: "รายจ่ายต้องห้าม",
+    type: "boolean",
+    llm_prompt: "true if expense is non-deductible under Section 65 tri, false otherwise. For income transactions, always false.",
+    isVisibleInList: false,
+    isVisibleInAnalysis: false,
+    isRequired: false,
+    isExtra: false,
+  },
+  {
+    code: "non_deductible_reason",
+    name: "เหตุผลรายจ่ายต้องห้าม",
+    type: "string",
+    llm_prompt: "Brief Thai explanation of why expense is non-deductible. Empty if fully deductible.",
+    isVisibleInList: false,
+    isVisibleInAnalysis: false,
+    isRequired: false,
+    isExtra: false,
+  },
+  {
+    code: "non_deductible_category",
+    name: "หมวดรายจ่ายต้องห้าม",
+    type: "string",
+    llm_prompt: "Category: provision, personal, charitable, entertainment, capital, penalty, no_recipient, cit_payment, or empty",
     isVisibleInList: false,
     isVisibleInAnalysis: false,
     isRequired: false,

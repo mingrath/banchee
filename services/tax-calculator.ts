@@ -138,3 +138,212 @@ export function computeWHTFromTotal(
   const wht = calculateWHT(vat.subtotal, whtRate, totalInclVAT)
   return { ...vat, ...wht }
 }
+
+// ─── CIT (Corporate Income Tax) ──────────────────────────────
+
+/**
+ * SME tiered rate thresholds (all in satang).
+ */
+export const SME_TIER_1_LIMIT = 30000000    // 300,000 THB
+export const SME_TIER_2_LIMIT = 300000000   // 3,000,000 THB
+export const SME_CAPITAL_LIMIT = 500000000  // 5,000,000 THB
+export const SME_REVENUE_LIMIT = 3000000000 // 30,000,000 THB
+export const ENTERTAINMENT_HARD_CAP = 1000000000 // 10,000,000 THB
+
+export type CITTier = {
+  from: number
+  to: number
+  rate: number
+  taxableAmount: number
+  tax: number
+}
+
+export type CITResult = {
+  netProfit: number
+  isEligible: boolean
+  tiers: CITTier[]
+  totalCIT: number
+  effectiveRate: number // basis points (1050 = 10.50%)
+}
+
+export type EntertainmentCapResult = {
+  actualAmount: number
+  revenueBase: number
+  capitalBase: number
+  capBase: number
+  hardCap: number
+  deductibleAmount: number
+  nonDeductibleAmount: number
+  status: "under" | "approaching" | "over"
+}
+
+export type CharitableCapResult = {
+  actualAmount: number
+  netProfitBase: number
+  cap: number
+  deductibleAmount: number
+  nonDeductibleAmount: number
+  status: "under" | "approaching" | "over"
+}
+
+/**
+ * Determine SME eligibility based on paid-up capital and annual revenue.
+ * Both thresholds must be met (BOTH must be at or below limits).
+ */
+export function isSMEEligible(paidUpCapital: number, annualRevenue: number): boolean {
+  return paidUpCapital <= SME_CAPITAL_LIMIT && annualRevenue <= SME_REVENUE_LIMIT
+}
+
+/**
+ * Calculate CIT using SME progressive rates.
+ * Tiers: 0% on first 300K, 15% on 300K-3M, 20% above 3M.
+ * All amounts in satang.
+ */
+export function calculateSMECIT(netProfitSatang: number): CITResult {
+  if (netProfitSatang <= 0) {
+    return {
+      netProfit: netProfitSatang,
+      isEligible: true,
+      tiers: [
+        { from: 0, to: SME_TIER_1_LIMIT, rate: 0, taxableAmount: 0, tax: 0 },
+        { from: SME_TIER_1_LIMIT, to: SME_TIER_2_LIMIT, rate: 1500, taxableAmount: 0, tax: 0 },
+        { from: SME_TIER_2_LIMIT, to: Infinity, rate: 2000, taxableAmount: 0, tax: 0 },
+      ],
+      totalCIT: 0,
+      effectiveRate: 0,
+    }
+  }
+
+  // Tier 1: 0% on first 300K
+  const tier1Amount = Math.min(netProfitSatang, SME_TIER_1_LIMIT)
+  const tier1Tax = 0
+
+  // Tier 2: 15% on 300K to 3M
+  const tier2Amount = Math.max(0, Math.min(netProfitSatang, SME_TIER_2_LIMIT) - SME_TIER_1_LIMIT)
+  const tier2Tax = Math.round(tier2Amount * 1500 / 10000)
+
+  // Tier 3: 20% above 3M
+  const tier3Amount = Math.max(0, netProfitSatang - SME_TIER_2_LIMIT)
+  const tier3Tax = Math.round(tier3Amount * 2000 / 10000)
+
+  const totalCIT = tier1Tax + tier2Tax + tier3Tax
+  const effectiveRate = netProfitSatang > 0 ? Math.round(totalCIT * 10000 / netProfitSatang) : 0
+
+  return {
+    netProfit: netProfitSatang,
+    isEligible: true,
+    tiers: [
+      { from: 0, to: SME_TIER_1_LIMIT, rate: 0, taxableAmount: tier1Amount, tax: tier1Tax },
+      { from: SME_TIER_1_LIMIT, to: SME_TIER_2_LIMIT, rate: 1500, taxableAmount: tier2Amount, tax: tier2Tax },
+      { from: SME_TIER_2_LIMIT, to: Infinity, rate: 2000, taxableAmount: tier3Amount, tax: tier3Tax },
+    ],
+    totalCIT,
+    effectiveRate,
+  }
+}
+
+/**
+ * Calculate CIT at flat 20% rate (non-SME entities).
+ * All amounts in satang.
+ */
+export function calculateFlatCIT(netProfitSatang: number): CITResult {
+  if (netProfitSatang <= 0) {
+    return {
+      netProfit: netProfitSatang,
+      isEligible: false,
+      tiers: [{ from: 0, to: Infinity, rate: 2000, taxableAmount: 0, tax: 0 }],
+      totalCIT: 0,
+      effectiveRate: 0,
+    }
+  }
+
+  const totalCIT = Math.round(netProfitSatang * 2000 / 10000)
+
+  return {
+    netProfit: netProfitSatang,
+    isEligible: false,
+    tiers: [{ from: 0, to: Infinity, rate: 2000, taxableAmount: netProfitSatang, tax: totalCIT }],
+    totalCIT,
+    effectiveRate: 2000,
+  }
+}
+
+/**
+ * Calculate entertainment expense cap per Section 65 tri (4).
+ * Cap = MAX(revenue * 0.003, capital * 0.003), hard cap 10M THB.
+ * All amounts in satang.
+ */
+export function calculateEntertainmentCap(
+  actualEntertainment: number,
+  totalRevenue: number,
+  paidUpCapital: number
+): EntertainmentCapResult {
+  const revenueBase = Math.round(totalRevenue * 30 / 10000) // 0.3% = 30 basis points
+  const capitalBase = Math.round(paidUpCapital * 30 / 10000)
+  const capBase = Math.max(revenueBase, capitalBase)
+  const deductibleCap = Math.min(capBase, ENTERTAINMENT_HARD_CAP)
+  const deductibleAmount = Math.min(actualEntertainment, deductibleCap)
+  const nonDeductibleAmount = Math.max(0, actualEntertainment - deductibleCap)
+
+  let status: "under" | "approaching" | "over"
+  if (deductibleCap <= 0) {
+    status = actualEntertainment > 0 ? "over" : "under"
+  } else {
+    const ratio = actualEntertainment / deductibleCap
+    if (ratio >= 1) {
+      status = "over"
+    } else if (ratio >= 0.8) {
+      status = "approaching"
+    } else {
+      status = "under"
+    }
+  }
+
+  return {
+    actualAmount: actualEntertainment,
+    revenueBase,
+    capitalBase,
+    capBase,
+    hardCap: ENTERTAINMENT_HARD_CAP,
+    deductibleAmount,
+    nonDeductibleAmount,
+    status,
+  }
+}
+
+/**
+ * Calculate charitable expense cap per Section 65 tri (3).
+ * Cap = 2% of net profit before charitable deduction.
+ * All amounts in satang.
+ */
+export function calculateCharitableCap(
+  actualCharitable: number,
+  netProfitBeforeCharity: number
+): CharitableCapResult {
+  const cap = Math.max(0, Math.round(netProfitBeforeCharity * 200 / 10000)) // 2% = 200 basis points
+  const deductibleAmount = Math.min(actualCharitable, cap)
+  const nonDeductibleAmount = Math.max(0, actualCharitable - cap)
+
+  let status: "under" | "approaching" | "over"
+  if (cap <= 0) {
+    status = actualCharitable > 0 ? "over" : "under"
+  } else {
+    const ratio = actualCharitable / cap
+    if (ratio >= 1) {
+      status = "over"
+    } else if (ratio >= 0.8) {
+      status = "approaching"
+    } else {
+      status = "under"
+    }
+  }
+
+  return {
+    actualAmount: actualCharitable,
+    netProfitBase: netProfitBeforeCharity,
+    cap,
+    deductibleAmount,
+    nonDeductibleAmount,
+    status,
+  }
+}

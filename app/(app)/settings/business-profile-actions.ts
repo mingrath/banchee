@@ -19,6 +19,8 @@ export async function saveBusinessProfileAction(
     const vatRegistered = formData.get("vatRegistered") === "on"
     const vatRegDate = (formData.get("vatRegDate") as string) || null
     const fiscalYearStart = parseInt((formData.get("fiscalYearStart") as string) || "1", 10)
+    const paidUpCapitalBaht = parseFloat((formData.get("paidUpCapital") as string) || "0")
+    const paidUpCapital = !isNaN(paidUpCapitalBaht) ? Math.round(paidUpCapitalBaht * 100) : 0
 
     // Validate Tax ID if provided
     if (taxId && !/^\d{13}$/.test(taxId)) {
@@ -33,6 +35,7 @@ export async function saveBusinessProfileAction(
       vatRegistered,
       vatRegDate,
       fiscalYearStart,
+      paidUpCapital,
     })
 
     revalidatePath("/settings")
@@ -59,6 +62,7 @@ export async function resetBusinessProfileAction(
       vatRegistered: false,
       vatRegDate: null,
       fiscalYearStart: 1,
+      paidUpCapital: 0,
     })
 
     revalidatePath("/settings")

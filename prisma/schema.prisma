@@ -204,6 +204,9 @@ model Transaction {
   whtAmount             Int?      @map("wht_amount")
   whtType               String?   @map("wht_type")
   contactId             String?   @map("contact_id") @db.Uuid
+  isNonDeductible       Boolean?  @default(false) @map("is_non_deductible")
+  nonDeductibleReason   String?   @map("non_deductible_reason")
+  nonDeductibleCategory String?   @map("non_deductible_category")
 
   @@index([userId])
   @@index([projectCode])
@@ -214,6 +217,7 @@ model Transaction {
   @@index([total])
   @@index([vatType])
   @@index([whtType])
+  @@index([isNonDeductible])
   @@map("transactions")
 }
 

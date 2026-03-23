@@ -17,9 +17,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ValidationBadge, TaxInvoiceValidationSummary, FIELD_VALIDATION_MAP } from "@/components/unsorted/tax-invoice-validation"
 import { extractVATFromTotal, formatSatangToDisplay, WHT_RATE_OPTIONS } from "@/services/tax-calculator"
 import type { ValidationResult } from "@/ai/validators/tax-invoice-validator"
+import type { NonDeductibleFlag } from "@/ai/validators/non-deductible-validator"
 import { Category, Currency, Field, File, Project } from "@/prisma/client"
 import { format } from "date-fns"
-import { ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
+import { AlertTriangle, ArrowDownToLine, Brain, Loader2, Trash2 } from "lucide-react"
 import { startTransition, useActionState, useCallback, useMemo, useState } from "react"
 
 const VAT_TYPE_OPTIONS = [
@@ -51,6 +52,7 @@ export default function AnalyzeForm({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
   const [validation, setValidation] = useState<ValidationResult | null>(null)
+  const [nonDeductibleFlag, setNonDeductibleFlag] = useState<NonDeductibleFlag | null>(null)
 
   const fieldMap = useMemo(() => {
     return fields.reduce(
@@ -246,6 +248,23 @@ export default function AnalyzeForm({
         if (validationData) {
           setValidation(validationData)
         }
+
+        // Set non-deductible flag
+        const ndData = output as Record<string, unknown>
+        if (ndData.is_non_deductible === true) {
+          setNonDeductibleFlag({
+            isNonDeductible: true,
+            category: (ndData.non_deductible_category as string) || "",
+            reason: (ndData.non_deductible_reason as string) || "",
+            severity: ["penalty", "personal", "provision", "no_recipient", "cit_payment", "capital"].includes(
+              ndData.non_deductible_category as string
+            )
+              ? "warning"
+              : "info",
+          })
+        } else {
+          setNonDeductibleFlag(null)
+        }
       }
     } catch (error) {
       console.error("Analysis failed:", error)
@@ -420,6 +439,28 @@ export default function AnalyzeForm({
           <h3 className="text-sm font-bold text-foreground">ข้อมูลภาษี</h3>
 
           {validation && <TaxInvoiceValidationSummary validation={validation} />}
+
+          {nonDeductibleFlag?.isNonDeductible && (
+            <div
+              className={`rounded-lg border p-3 ${
+                nonDeductibleFlag.severity === "warning"
+                  ? "border-destructive/50 bg-destructive/10"
+                  : "border-amber-500/50 bg-amber-500/10"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <AlertTriangle
+                  className={`h-4 w-4 ${
+                    nonDeductibleFlag.severity === "warning" ? "text-destructive" : "text-amber-500"
+                  }`}
+                />
+                <span className="text-sm font-medium">
+                  {nonDeductibleFlag.severity === "warning" ? "รายจ่ายต้องห้าม" : "รายจ่ายต้องห้ามบางส่วน"}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">{nonDeductibleFlag.reason}</p>
+            </div>
+          )}
 
           <FormSelect
             title="ประเภทภาษี"
