@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatCurrency } from "@/lib/utils"
-import { FileText, Loader2 } from "lucide-react"
+import { Download, FileText, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useCallback, useEffect, useState } from "react"
-import { generateWHTReportAction, type WHTReportData } from "../actions"
+import { generateWHTReportAction, exportPND3TxtAction, exportPND53TxtAction, type WHTReportData } from "../actions"
 import { ReportPreview } from "./report-preview"
 import type { BusinessProfile } from "@/models/business-profile"
 import { toBuddhistYear } from "@/services/thai-date"
@@ -41,6 +41,8 @@ export function WHTReportClient({
   const [reportData, setReportData] = useState<WHTReportData | null>(null)
 
   const [generateState, generateAction, isGenerating] = useActionState(generateWHTReportAction, null)
+  const [exportPND3State, exportPND3Action, isExportingPND3] = useActionState(exportPND3TxtAction, null)
+  const [exportPND53State, exportPND53Action, isExportingPND53] = useActionState(exportPND53TxtAction, null)
 
   // Build year options (current year and 2 years back)
   const currentYear = new Date().getFullYear()
@@ -55,6 +57,24 @@ export function WHTReportClient({
     })
   }, [month, year, generateAction])
 
+  const handleExportPND3 = useCallback(() => {
+    const formData = new FormData()
+    formData.set("month", month)
+    formData.set("year", year)
+    startTransition(() => {
+      exportPND3Action(formData)
+    })
+  }, [month, year, exportPND3Action])
+
+  const handleExportPND53 = useCallback(() => {
+    const formData = new FormData()
+    formData.set("month", month)
+    formData.set("year", year)
+    startTransition(() => {
+      exportPND53Action(formData)
+    })
+  }, [month, year, exportPND53Action])
+
   // When generation completes, open preview
   useEffect(() => {
     if (generateState?.success && generateState.data) {
@@ -62,6 +82,40 @@ export function WHTReportClient({
       setPreviewOpen(true)
     }
   }, [generateState])
+
+  // When PND3 export completes, trigger download
+  useEffect(() => {
+    if (exportPND3State?.success && exportPND3State.data) {
+      const buddhistYear = toBuddhistYear(parseInt(year))
+      const filename = `PND3_${month}_${buddhistYear}.txt`
+      const blob = new Blob([exportPND3State.data], { type: "text/plain;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }, [exportPND3State, month, year])
+
+  // When PND53 export completes, trigger download
+  useEffect(() => {
+    if (exportPND53State?.success && exportPND53State.data) {
+      const buddhistYear = toBuddhistYear(parseInt(year))
+      const filename = `PND53_${month}_${buddhistYear}.txt`
+      const blob = new Blob([exportPND53State.data], { type: "text/plain;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }, [exportPND53State, month, year])
 
   return (
     <div className="space-y-6">
@@ -112,11 +166,45 @@ export function WHTReportClient({
             </>
           )}
         </Button>
+
+        <Button variant="outline" onClick={handleExportPND3} disabled={isExportingPND3}>
+          {isExportingPND3 ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              กำลังส่งออก...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              ส่งออก ภ.ง.ด.3 สำหรับ e-Filing
+            </>
+          )}
+        </Button>
+
+        <Button variant="outline" onClick={handleExportPND53} disabled={isExportingPND53}>
+          {isExportingPND53 ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              กำลังส่งออก...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              ส่งออก ภ.ง.ด.53 สำหรับ e-Filing
+            </>
+          )}
+        </Button>
       </div>
 
+      <p className="text-xs text-muted-foreground -mt-4">
+        ดาวน์โหลดไฟล์ .txt สำหรับนำเข้า RD Prep หรืออัปโหลดที่ efiling.rd.go.th
+      </p>
+
       {/* Error display */}
-      {generateState?.error && (
-        <p className="text-sm text-destructive">{generateState.error}</p>
+      {(generateState?.error || exportPND3State?.error || exportPND53State?.error) && (
+        <p className="text-sm text-destructive">
+          {generateState?.error || exportPND3State?.error || exportPND53State?.error}
+        </p>
       )}
 
       {/* Summary Card */}

@@ -168,11 +168,11 @@ export async function createCreditNoteAction(
     const noteAppDataKey = `credit-note-${docNumber}`
     const appData = await prisma.appData.upsert({
       where: { userId_app: { userId: user.id, app: noteAppDataKey } },
-      update: { data: noteData as unknown as Record<string, unknown> },
+      update: { data: noteData as unknown as import("@/prisma/client").Prisma.InputJsonValue },
       create: {
         userId: user.id,
         app: noteAppDataKey,
-        data: noteData as unknown as Record<string, unknown>,
+        data: noteData as unknown as import("@/prisma/client").Prisma.InputJsonValue,
       },
     })
 

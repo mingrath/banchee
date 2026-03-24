@@ -154,11 +154,11 @@ export async function createTaxInvoiceAction(
       where: {
         userId_app: { userId: user.id, app: appDataKey },
       },
-      update: { data: invoiceData as unknown as Record<string, unknown> },
+      update: { data: invoiceData as unknown as import("@/prisma/client").Prisma.InputJsonValue },
       create: {
         userId: user.id,
         app: appDataKey,
-        data: invoiceData as unknown as Record<string, unknown>,
+        data: invoiceData as unknown as import("@/prisma/client").Prisma.InputJsonValue,
       },
     })
 

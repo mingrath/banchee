@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatCurrency } from "@/lib/utils"
-import { FileText, Loader2 } from "lucide-react"
+import { Download, FileText, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useCallback, useEffect, useState } from "react"
-import { generateVATReportAction, type VATReportData } from "../actions"
+import { generateVATReportAction, exportPP30TxtAction, type VATReportData } from "../actions"
 import { ReportPreview } from "./report-preview"
 import type { VATSummary } from "@/models/stats"
 import type { BusinessProfile } from "@/models/business-profile"
@@ -44,6 +44,7 @@ export function VATReportClient({
   const [reportData, setReportData] = useState<VATReportData | null>(null)
 
   const [generateState, generateAction, isGenerating] = useActionState(generateVATReportAction, null)
+  const [exportState, exportAction, isExporting] = useActionState(exportPP30TxtAction, null)
 
   // Build year options (current year and 2 years back)
   const currentYear = new Date().getFullYear()
@@ -58,6 +59,15 @@ export function VATReportClient({
     })
   }, [month, year, generateAction])
 
+  const handleExportPP30 = useCallback(() => {
+    const formData = new FormData()
+    formData.set("month", month)
+    formData.set("year", year)
+    startTransition(() => {
+      exportAction(formData)
+    })
+  }, [month, year, exportAction])
+
   // When generation completes, open preview
   useEffect(() => {
     if (generateState?.success && generateState.data) {
@@ -65,6 +75,23 @@ export function VATReportClient({
       setPreviewOpen(true)
     }
   }, [generateState])
+
+  // When export completes, trigger download
+  useEffect(() => {
+    if (exportState?.success && exportState.data) {
+      const buddhistYear = toBuddhistYear(parseInt(year))
+      const filename = `PP30_${month}_${buddhistYear}.txt`
+      const blob = new Blob([exportState.data], { type: "text/plain;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }, [exportState, month, year])
 
   const netVAT = initialSummary.netVAT
   const isPayable = netVAT > 0
@@ -118,11 +145,29 @@ export function VATReportClient({
             </>
           )}
         </Button>
+
+        <Button variant="outline" onClick={handleExportPP30} disabled={isExporting}>
+          {isExporting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              กำลังส่งออก...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              ส่งออกสำหรับ e-Filing
+            </>
+          )}
+        </Button>
       </div>
 
+      <p className="text-xs text-muted-foreground -mt-4">
+        ดาวน์โหลดไฟล์ .txt สำหรับนำเข้า RD Prep หรืออัปโหลดที่ efiling.rd.go.th
+      </p>
+
       {/* Error display */}
-      {generateState?.error && (
-        <p className="text-sm text-destructive">{generateState.error}</p>
+      {(generateState?.error || exportState?.error) && (
+        <p className="text-sm text-destructive">{generateState?.error || exportState?.error}</p>
       )}
 
       {/* Summary Card */}
