@@ -128,9 +128,19 @@ GitHub: https://github.com/mingrath/banchee
 | Business profile in Settings model | Reuses existing key-value storage — no schema change needed | ✓ Good — zero migration risk |
 | Pipe-delimited TXT for RD export | Revenue Dept uses pipe-delimited format for most e-filing forms | ⚠ Revisit — needs validation against live RD portal |
 
+## Current Milestone: v1.1 Document Workflow
+
+**Goal:** Complete the Thai business document chain — quotation to invoice to receipt — plus bank reconciliation and ship-ready polish.
+
+**Target features:**
+- Quotation (ใบเสนอราคา) creation, management, and convert-to-invoice flow
+- Document workflow chain: quotation → invoice → receipt → tax invoice + delivery/billing notes
+- Bank statement import and auto-reconciliation with transactions
+- README rebrand, Docker production build test, visual QA
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-03-25 after v1.0 milestone*
+*Last updated: 2026-03-25 after v1.1 milestone start*

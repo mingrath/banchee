@@ -1,9 +1,9 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: milestone_complete
-stopped_at: v1.0 milestone archived
+milestone: v1.1
+milestone_name: Document Workflow
+status: defining_requirements
+stopped_at: Starting v1.1 milestone
 last_updated: "2026-03-25T12:23:42.426Z"
 progress:
   total_phases: 4
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes.
-**Current focus:** v1.0 complete — planning next milestone
+**Current focus:** v1.1 Document Workflow — defining requirements
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes -- zero accountant needed, zero tax penalties.
 **Current focus:** Phase 04 — export-interoperability
