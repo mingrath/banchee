@@ -492,6 +492,24 @@ Use these entry points:
 - `/gsd:execute-phase` for planned phase work
 
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+
+## Test-Driven Development (MANDATORY)
+
+All new features and bug fixes MUST follow TDD workflow using the `superpowers:test-driven-development` skill:
+
+1. **RED** — Write failing tests first (describe expected behavior)
+2. **GREEN** — Write minimal implementation to pass tests
+3. **REFACTOR** — Clean up while keeping tests green
+
+Test framework: **Vitest** (ESM-native, configured in v1.0)
+Coverage target: **80%+**
+
+Before writing any implementation code, invoke the TDD skill. This applies to:
+- New services (e.g., document model, quotation actions)
+- New utility functions (e.g., status transitions, numbering)
+- Bug fixes (write regression test first)
+
+Tests go in `__tests__/` directories co-located with the code they test.
 <!-- GSD:workflow-end -->
 
 
