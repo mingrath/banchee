@@ -1,317 +1,374 @@
-# Feature Landscape: Thai SME Accounting/Tax Tools
+# Feature Research: v1.1 Document Workflow & Bank Reconciliation
 
-**Domain:** AI-powered self-hosted Thai SME tax compliance
-**Researched:** 2026-03-23
-**Overall confidence:** HIGH (based on official Revenue Department sources, competitor product pages, and multiple cross-referenced articles)
-
----
-
-## Competitor Landscape Summary
-
-| Platform | Focus | Users/Scale | Pricing | Key Strength |
-|----------|-------|-------------|---------|-------------|
-| **FlowAccount** | Full cloud accounting for SMEs | 130,000+ active users | Free tier; paid from 300 THB/mo | Market leader, broadest feature set, Sequoia-backed |
-| **PEAK** | Modern cloud accounting + accountant collaboration | ~100K transactions/mo managed | 500-3,500 THB/mo | Bank reconciliation AI, UOB lending integration |
-| **AccRevo** | Digital accounting platform bridging owners and accountants | Growing SME base | ~5,500 THB/yr (Accistant+Book bundle) | AI-powered OCR, accountant collaboration model |
-| **Leceipt** | e-Tax Invoice and e-Receipt specialist | Niche e-commerce focus | Volume-based (300-3,000+ docs) | PDF/A-3 + XML generation, digital signatures, marketplace integrations |
-| **SME Move** | Budget-friendly Thai accounting | SME/startup focused | Competitive (below FlowAccount) | Complete tax form generation (PND1/3/53, PP30) |
+**Domain:** Thai SME accounting - document workflow chain, quotation system, bank reconciliation
+**Researched:** 2026-03-25
+**Confidence:** HIGH (Thai Revenue Department sources, FlowAccount/PEAK competitor analysis, industry standard patterns)
+**Scope:** NEW features only for v1.1 milestone. Does not repeat v1.0 features already built.
 
 ---
 
-## Table Stakes
+## Feature Landscape
 
-Features users expect from any Thai SME accounting/tax tool. Missing any of these means the product feels incomplete and users leave.
+### Table Stakes (Users Expect These)
 
-### Document Management
+Features that FlowAccount, PEAK, and SME Move all provide. Missing these makes BanChee feel like "just a receipt scanner" rather than a real accounting tool.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Quotation creation** | Standard Thai business workflow starts with quotation | Low | All competitors support. Template-based. |
-| **Invoice generation** | Core billing document | Low | Must support THB + multi-currency |
-| **Tax invoice (ใบกำกับภาษี) creation** | Legal requirement for VAT-registered businesses | Medium | Must include all 8 required fields per Section 86/4 of Revenue Code |
-| **Receipt issuance** | Proof of payment received | Low | Generated after payment confirmation |
-| **Delivery note / billing note** | Goods delivery documentation | Low | FlowAccount, PEAK, SME Move all support |
-| **Credit note / debit note** | Corrections to previously issued tax invoices | Medium | Required when invoice amounts change post-issuance |
-| **Document status tracking** | Track lifecycle: pending -> approved -> paid | Low | FlowAccount tracks 6 states. Essential for cash flow visibility. |
-| **Document numbering/sequencing** | Legally required sequential numbering for tax documents | Low | Revenue Dept requires sequential serial numbers on tax invoices |
-
-### Tax Compliance - VAT
+#### Quotation System (ใบเสนอราคา)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **7% VAT auto-calculation** | Thailand's standard VAT rate | Low | Apply on document line items, auto-calculate totals |
-| **Input/output VAT tracking (ภาษีซื้อ/ภาษีขาย)** | Foundation of monthly VAT filing | Medium | Track VAT paid (purchases) vs VAT collected (sales) per month |
-| **Purchase tax report (รายงานภาษีซื้อ)** | Required supporting document for PP30 filing | High | Must include: date, tax invoice number, vendor name, vendor Tax ID, tax base amount, VAT amount |
-| **Sales tax report (รายงานภาษีขาย)** | Required supporting document for PP30 filing | High | Mirror of purchase report for sales side |
-| **PP30 VAT return generation** | Monthly VAT filing form | High | Calculate output VAT minus input VAT; file by 15th of following month (paper) or 23rd (e-filing). Even zero months require filing. |
-| **6-month input tax invoice validity** | Legal constraint on VAT credit claims | Medium | Input tax invoices expire after 6 months; system must flag/warn |
+| **Quotation creation with line items** | Every Thai accounting app starts the sales cycle with quotation. FlowAccount, PEAK, SME Move all support this. | MEDIUM | Reuse existing InvoiceFormData line item structure. Must add Thai labels (รายการ, จำนวน, ราคาต่อหน่วย, จำนวนเงิน). |
+| **Quotation PDF generation** | Customers expect professional Thai-language PDF to review and sign | LOW | Extend existing InvoicePDF component. Add THSarabunNew font, Buddhist Era dates, Thai number formatting. |
+| **Quotation validity period** | Standard business practice to set expiry date on quotes | LOW | Simple date field. Default 30 days from issue. Show "expired" badge after date passes. |
+| **Contact picker from existing contacts** | Users already have contacts with Tax ID and branch in BanChee | LOW | Wire existing Contact model to quotation form. Auto-populate name, Tax ID, address, branch. |
+| **Sequential quotation numbering** | Document traceability requires sequential numbering. Common prefix: QT-YYMM-NNN or user-customizable format. | LOW | Separate number series from tax invoices. Store last-used number per document type. |
+| **Quotation status tracking** | FlowAccount offers 6 statuses. Users need to know which quotes are pending, accepted, or expired. | LOW | Statuses: draft, sent, accepted, rejected, expired. Simple enum field. |
 
-### Tax Compliance - Withholding Tax (WHT)
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **WHT rate selection per payment type** | Different rates for different service types | Medium | Services: 3%, Rent: 5%, Transport: 1%, Professional: 3%, Advertising: 2% |
-| **WHT certificate generation (50 Tawi)** | Legal requirement when withholding tax | High | Must include: payer/payee details, Tax ID, WHT rate, product category, payment condition. Two copies required. |
-| **PND3 filing report** | Monthly WHT return for payments to individuals | High | File within 7 days of month end (paper) or 15 days (e-filing) |
-| **PND53 filing report** | Monthly WHT return for payments to companies | High | Same deadlines as PND3, different form/recipient type |
-| **WHT amount auto-calculation** | Deduct correct WHT from payment amounts | Medium | Calculate pre-VAT, apply WHT rate, show net payable |
-
-### Tax Compliance - Corporate Income Tax
+#### Document Workflow Chain
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **SME tax rate calculation** | Reduced rates for qualifying SMEs | Medium | 0% on first 300K net profit, 15% on 300K-3M, 20% above 3M. Must verify SME eligibility (capital <=5M, revenue <=30M). |
-| **PND50 annual CIT helper** | Annual corporate income tax return data | High | Due within 150 days after accounting year end (typically May 30). Calculate from P&L. |
-| **PND51 half-year CIT helper** | Half-year estimated CIT | High | Due within 2 months after first 6 months (typically August 31) |
+| **Quotation-to-invoice conversion** | FlowAccount's core value prop: "fill in information ONCE." PEAK supports same flow. Eliminates re-entry. | MEDIUM | Copy all line items, contact, amounts from quotation to new invoice. Link documents via reference. |
+| **Invoice/billing note creation (ใบแจ้งหนี้/ใบวางบิล)** | Distinct from tax invoice. Used to request payment before goods/services are fully delivered. | MEDIUM | Separate document type from tax invoice. Different numbering series (INV-YYMM-NNN). Thai businesses commonly combine invoice + delivery note as single document. |
+| **Invoice-to-receipt conversion (ใบเสร็จรับเงิน)** | Receipt confirms payment received. Standard Thai document chain step after invoice is paid. | LOW | Copy amounts from invoice, add payment date and payment method. New numbering series (RC-YYMM-NNN). |
+| **Invoice-to-tax-invoice conversion** | VAT-registered businesses need to convert billing invoice into a proper tax invoice (ใบกำกับภาษี). BanChee already has tax invoice creation - this adds the "convert from" workflow. | MEDIUM | Reuse existing tax invoice generator. Pre-fill from invoice data. Must validate all 11 Section 86/4 fields. |
+| **Document reference chain** | Each downstream document must reference the originating document number. Receipt references invoice number, invoice references quotation number. | LOW | Add `referenceDocumentId` and `referenceDocumentNumber` fields. Display as "อ้างอิงเลขที่" on PDF. |
+| **Document lifecycle statuses per type** | FlowAccount tracks: Pending Approval, Completed, Billing Issued, Billed, Receipt Issued, Cash Collected. Users need at-a-glance status. | LOW | Quotation: draft/sent/accepted/rejected/expired. Invoice: draft/sent/partially_paid/paid/overdue. Receipt: issued. Tax Invoice: issued/voided. |
 
-### Reporting & Dashboard
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Income/expense summary dashboard** | At-a-glance business health | Medium | All competitors provide this. Real-time P&L view. |
-| **Monthly tax summary** | Know what's owed before filing | Medium | VAT payable, WHT withheld, upcoming deadlines |
-| **Excel/CSV export** | Data portability, accountant handoff | Low | Standard Thai accountant expects Excel format |
-| **Contact/vendor management** | Store supplier/customer details with Tax IDs | Low | Reuse across documents; pre-populate tax forms |
-| **Product/service catalog** | Reusable line items for documents | Low | Price, description, VAT applicability, WHT category |
-
-### Filing Deadline Management
+#### Bank Reconciliation
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Tax calendar with Thai deadlines** | Prevent penalties (1,000-2,000 THB/month + 1.5% interest) | Medium | See calendar below |
-| **Filing reminders/notifications** | Proactive deadline alerts | Low | Push/email notifications before deadlines |
-| **Filing status tracking** | Track which months are filed vs pending | Low | Per-form tracking: PP30, PND3, PND53 per month |
+| **Bank statement CSV/Excel import** | Thai banks primarily export PDF statements. Users will manually export or convert to CSV/Excel. PEAK supports PDF and Excel import. | MEDIUM | Support CSV and Excel formats. Configurable column mapping (date, description, debit, credit, balance). Must handle Thai date formats and Thai bank description text. |
+| **Transaction list from imported statement** | Display imported bank transactions in a reviewable list before matching | LOW | Parse imported file, display in table with date, description, amount, and match status columns. |
+| **Manual transaction matching** | Core reconciliation: user selects a bank transaction and matches it to a BanChee transaction (income/expense) | MEDIUM | Side-by-side view: bank transactions on left, BanChee transactions on right. Click to match. Show matched/unmatched counts. |
+| **Auto-suggest matches by amount + date** | PEAK and FlowAccount both offer auto-matching. Users expect the system to suggest likely matches. | MEDIUM | Match algorithm: exact amount match within +/- 3 day window. Rank by date proximity. Show confidence score. |
+| **Reconciliation summary report** | Show reconciled vs unreconciled totals per bank account per month | LOW | Display: total bank balance, total book balance, difference, matched count, unmatched count. |
 
-#### Thai Tax Filing Calendar
+### Differentiators (Competitive Advantage)
 
-| Obligation | Form | Deadline (Paper) | Deadline (e-Filing) | Frequency |
-|------------|------|-------------------|---------------------|-----------|
-| VAT return | PP30 | 15th of following month | 23rd of following month | Monthly (even if zero) |
-| WHT on individuals | PND3 | 7th of following month | 15th of following month | Monthly (when payments made) |
-| WHT on companies | PND53 | 7th of following month | 15th of following month | Monthly (when payments made) |
-| WHT on employees | PND1 | 7th of following month | 15th of following month | Monthly |
-| Half-year CIT estimate | PND51 | Within 2 months of half-year end | +8 days extension | Once per year |
-| Annual CIT return | PND50 | Within 150 days of year end | +8 days extension | Once per year |
-| WHT certificates to recipients | 50 Tawi | Feb 15 for current employees; 1 month for departing | N/A | Annual / on departure |
-
-### Receipt/Document Scanning
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Photo/PDF upload of receipts** | Digitize paper documents | Low | Already exists in TaxHacker foundation |
-| **AI data extraction from receipts** | Reduce manual entry | High | Already exists in TaxHacker. FlowAccount has "AutoKey" (AI OCR). AccRevo has "Accounting Image" + "Accounting Intelligence". |
-| **Thai text extraction** | Receipts are in Thai | High | Must handle Thai script, mixed Thai/English, Thai date formats |
-| **Tax invoice field validation** | Verify receipt is valid tax invoice | Medium | Check all 8 required fields per Section 86/4 |
-
-### User Experience
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Thai language UI** | Target users are Thai SME owners | Medium | All competitors are Thai-first. Tax terminology must match Revenue Dept official terms. |
-| **Mobile-responsive design** | Business owners work from phones | Medium | FlowAccount has native mobile app. Web responsive is minimum. |
-| **Multi-user access** | Owner + accountant/bookkeeper access | Low | PEAK supports 5-10 users per plan. Basic role separation needed. |
-
----
-
-## Differentiators
-
-Features that set BanChee apart from competitors. Not expected, but create competitive advantage.
-
-### AI-Powered Intelligence (BanChee's Primary Differentiator)
+Features that go beyond what competitors offer, leveraging BanChee's AI capabilities and self-hosted advantage.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **AI auto-categorization of expenses** | Snap receipt, AI handles categorization | High | TaxHacker foundation supports this. Train for Thai expense categories. Competitors require manual categorization. |
-| **AI tax invoice validation** | AI checks 8 required fields, flags missing/invalid | High | No competitor does this automatically. Huge value -- prevents rejected tax credits. |
-| **AI-detected VAT registration threshold** | Auto-alert when revenue approaches 1.8M THB | Medium | Track cumulative revenue, notify before crossing threshold. Unique feature. |
-| **AI Section 65 Tri flagging** | Auto-flag non-deductible expenses | High | Flag entertainment >0.3% of revenue, personal expenses, unidentifiable recipients. No competitor does this. |
-| **AI WHT rate suggestion** | Suggest correct WHT rate based on vendor/service type | Medium | Reduce most common SME mistake. Pre-fill from vendor history. |
-| **Multi-LLM provider support** | No vendor lock-in for AI features | Medium | Already in TaxHacker. OpenAI, Gemini, Mistral. Unique among Thai tools. |
+| **AI-powered bank statement description parsing** | Thai bank descriptions are cryptic (e.g., "TFR/BAAC/0123456789"). AI can extract payee name, detect transaction type, suggest matching transaction. Neither FlowAccount nor PEAK do this with AI. | HIGH | Use existing LLM pipeline. Parse Thai bank descriptions to extract: counterparty, transaction type (transfer/payment/deposit), reference number. Suggest best match. |
+| **One-click quotation-to-full-chain** | Instead of converting one step at a time (QT to INV to RC), offer "Mark as Paid" on a quotation that auto-creates invoice + receipt + tax invoice in one action. Competitors require step-by-step. | MEDIUM | Shortcut for simple transactions. Create all documents with proper references in single server action. Show all generated documents after completion. |
+| **AI quotation line item suggestion** | When creating a quotation for a returning contact, AI suggests previously used line items and prices from past quotations/invoices. | MEDIUM | Query past transactions for same contact. Use LLM to rank relevance. Pre-populate with "use previous items" button. |
+| **Delivery note (ใบส่งของ) generation** | Goods-based businesses need delivery notes. Can be combined as "ใบส่งของ/ใบแจ้งหนี้" (delivery note + invoice) on single document. | LOW | Add delivery note template. Same line items, add delivery address, receiver signature field. Optional - only for product-based businesses. |
+| **Purchase order (ใบสั่งซื้อ) creation** | Purchase side of document chain. Less common in basic SME tools, but expected by businesses that buy from suppliers regularly. | MEDIUM | Mirror of quotation but for purchases. PO-YYMM-NNN numbering. Links to expense transactions when goods received. |
 
-### Self-Hosted / Open Source
+### Anti-Features (Commonly Requested, Often Problematic)
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Self-hosted Docker deployment** | Financial data never leaves user's server | Low | Unique in Thai market. All competitors are cloud SaaS. Appeals to privacy-conscious businesses. |
-| **Open source (MIT license)** | Free forever, community-driven | Low | No Thai open-source accounting tool exists. Zero monthly fees vs FlowAccount 300+/mo, PEAK 500+/mo. |
-| **Offline-capable operation** | Works without internet after setup | Medium | Self-hosted naturally works on LAN. Competitors require internet. |
+Features that seem good but should NOT be built for v1.1.
 
-### Export & Interoperability
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **FlowAccount-compatible export** | Easy migration path, accountant familiarity | Medium | Many accountants already use FlowAccount. CSV format compatibility. |
-| **Revenue Department e-Filing XML export** | Generate upload-ready files for rd.go.th | High | XML format per ETDA standard 3-2560. No direct API (rd.go.th has no public API). |
-| **Standard Thai accountant Excel format** | Handoff to external accountant when needed | Medium | Accountants expect specific column layouts for tax reports |
-| **Purchase/Sales tax ledger export** | Supporting documents for PP30 filing | Medium | Required columns: date, invoice#, vendor/customer name, Tax ID, base amount, VAT amount |
-
-### Smart Workflow Features
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Receipt-to-report pipeline** | Upload receipt -> auto-extract -> categorize -> generate report | High | End-to-end automation. FlowAccount does partial (AutoKey scans, manual categorization). BanChee should do full pipeline. |
-| **Monthly filing checklist** | Guided workflow: "Here's what you need to file this month" | Medium | Context-aware: show relevant forms based on business activity that month |
-| **Penalty calculator** | Show cost of late filing to motivate compliance | Low | 1,000-2,000 THB fine + 1.5%/month interest. Strong motivator. |
-| **Year-over-year comparison** | Compare tax obligations across periods | Medium | Helps plan cash flow for tax payments |
-
----
-
-## Anti-Features
-
-Features to explicitly NOT build. Building these would waste effort, increase complexity, or conflict with BanChee's positioning.
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **Full double-entry bookkeeping / general ledger** | Accounting software territory. Massive complexity. BanChee is a tax compliance tool, not a replacement for PEAK/FlowAccount. | Generate tax-specific reports only. Export to FlowAccount/PEAK for full accounting. |
-| **e-Tax Invoice digital signatures (PDF/A-3 + CA cert)** | Requires Revenue Dept registration, CA certificate purchase, complex PKI infrastructure. Leceipt's entire business is this one feature. | Generate standard tax invoices. Recommend Leceipt for e-Tax Invoice signing. Possible v2 integration. |
-| **Direct Revenue Dept API submission** | rd.go.th has NO public API. Would require browser automation (fragile, possibly illegal). | Generate upload-ready XML/files. User manually uploads to rd.go.th e-filing portal. |
-| **Payroll management** | Different domain entirely. FlowAccount, PEAK, and SME Move all treat this as a separate module/add-on. | Out of scope. Recommend FlowAccount Payroll or PEAK Payroll for this. |
-| **Inventory/stock management** | Warehouse management is a separate system. Not tax-related. | Track product catalog for invoicing only. No stock levels, FIFO, or warehouse features. |
-| **Social Security Fund (SSO) filing** | Separate system from tax. Different deadlines, different portal. | Out of scope. Document why in onboarding. |
-| **Multi-tenant SaaS hosting** | Self-hosted is the differentiator. Multi-tenant adds auth complexity, data isolation concerns, hosting costs. | Single-tenant Docker first. SaaS mode deferred to v2 if demand exists. |
-| **Bank reconciliation** | Requires Thai bank API integrations (K-Bank, SCB, BBL). Each bank is a separate integration project. PEAK's main differentiator. | Allow manual bank statement CSV import. Don't build real-time bank connectivity. |
-| **E-commerce marketplace integration** | Shopee/Lazada/TikTok Shop integration is Leceipt's specialty. Complex, platform-specific APIs. | Allow CSV/manual import of marketplace sales data. |
-| **PND1 employee withholding tax** | Requires payroll data, employee records, salary calculations. Payroll domain. | Out of scope for v1. Focus on PND3 (individuals) and PND53 (companies) which are vendor payment related. |
-| **Real-time collaboration** | Multi-seat editing adds WebSocket complexity, conflict resolution. Target user is single SME owner. | Single-user with basic role-based access (owner + accountant viewer). |
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| **Direct bank API/Open Banking connection** | "Auto-import statements without manual upload" | Thai banks have no public Open Banking API. SCB, KBank, BBL all require corporate agreements. Maintaining bank integrations is a full-time job. PEAK only supports Krungthai via special API deal. | CSV/Excel import covers 95% of use cases. Keep it simple. Revisit when Thai Open Banking standards mature. |
+| **Full accounts receivable aging report** | "Show me 30/60/90 day aging buckets" | Requires proper double-entry accounting foundation that BanChee deliberately avoids. Complex to implement correctly without a general ledger. | Simple "overdue invoices" list filtered by due date. Flag invoices past due by 30+ days. Good enough for SME needs. |
+| **Multi-currency quotation with live exchange rates** | "I sell to international clients" | BanChee's target is Thai SMEs selling domestically. Multi-currency adds complexity to the document chain (which currency for tax invoice? which rate for VAT calculation?). | Thai Baht only for v1.1 document workflow. Existing multi-currency support in transactions is sufficient for expense tracking. |
+| **Inventory management tied to delivery notes** | "Auto-deduct stock when delivery note is issued" | Inventory is a separate domain. Mixing it with document workflow creates tight coupling and scope explosion. FlowAccount charges separately for inventory. | Delivery notes track quantities but don't manage inventory. Add inventory as a separate milestone if market demands it. |
+| **Customer approval portal / e-signature** | "Let customers accept quotations online via link" | Requires hosting a public-facing page, email infrastructure, signature validation. Massive scope for a self-hosted tool. | Generate PDF, user sends via LINE/email manually. Mark as "accepted" in the app. Thai SMEs communicate via LINE anyway. |
+| **Automatic bank statement PDF parsing** | "Upload the bank PDF directly, skip CSV conversion" | PDF parsing is extremely fragile across Thai bank formats (SCB, KBank, BBL, KTB all different). Layout changes break parsing. High maintenance burden. | Provide a recommended CSV format template. Link to free tools like MintConvert for PDF-to-CSV conversion. Support Excel import since some banks offer that. |
+| **Partial payment tracking with installments** | "Split an invoice into 3 monthly payments" | Installment tracking requires payment schedule management, automatic reminders, partial receipt generation. Complex AR system. | Track payment status as paid/unpaid only for v1.1. Note partial payment amount in a free-text field. Full installment tracking for v2+. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Receipt Upload -> AI Data Extraction -> Thai Text Extraction
-                                     -> Tax Invoice Field Validation
+[Contact Management] (EXISTING)
+    |
+    v
+[Quotation System] (NEW)
+    |
+    +-- requires --> [Contact Picker] (reuse existing Contact model)
+    +-- requires --> [Document Numbering Service] (NEW - shared across doc types)
+    +-- requires --> [Line Item Component] (reuse existing InvoiceItem)
+    |
+    v
+[Document Workflow Chain] (NEW)
+    |
+    +-- Quotation --> Invoice conversion
+    +-- Invoice --> Receipt conversion
+    +-- Invoice --> Tax Invoice conversion (reuse existing tax invoice generator)
+    +-- requires --> [Document Reference Linking] (NEW)
+    +-- requires --> [Document Status Tracking] (NEW)
+    |
+    v
+[Tax Invoice] (EXISTING - enhanced with conversion workflow)
 
-AI Data Extraction -> Expense Categorization -> Section 65 Tri Flagging
-                   -> VAT Amount Extraction -> Input VAT Tracking -> Purchase Tax Report -> PP30 Generation
-                   -> WHT Detection -> WHT Certificate (50 Tawi) -> PND3/PND53 Reports
-
-Contact Management -> Tax Invoice Creation -> Output VAT Tracking -> Sales Tax Report -> PP30 Generation
-
-Income Tracking -> Revenue Threshold Detection (1.8M VAT registration)
-               -> SME Eligibility Check -> CIT Rate Calculation -> PND50/PND51 Helpers
-
-Tax Calendar -> Filing Reminders -> Filing Status Tracking -> Monthly Filing Checklist
-
-All Tax Reports -> Excel Export
-               -> FlowAccount-Compatible Export
-               -> Revenue Dept XML Export
+[Bank Statement Import] (NEW - independent of document chain)
+    |
+    +-- requires --> [CSV/Excel Parser] (NEW)
+    +-- requires --> [Bank Transaction Model] (NEW Prisma model)
+    |
+    v
+[Transaction Matching] (NEW)
+    |
+    +-- requires --> [Existing Transactions] (query existing Transaction model)
+    +-- enhances --> [Bank Reconciliation Report] (NEW)
+    +-- optional --> [AI Description Parser] (uses existing LLM pipeline)
 ```
 
-### Critical Path
+### Dependency Notes
 
-1. **Receipt scanning + Thai AI extraction** (foundation -- already partially exists in TaxHacker)
-2. **VAT input/output tracking** (enables PP30, the most frequent filing obligation)
-3. **WHT management** (enables PND3/PND53, the second most frequent obligation)
-4. **Tax report generation** (the core output users need)
-5. **Export formats** (how users actually file with Revenue Dept)
-
----
-
-## MVP Recommendation
-
-### Must Have for Launch (Table Stakes)
-
-1. **Thai language UI** -- non-negotiable for target users
-2. **AI receipt scanning with Thai extraction** -- core differentiator, extends TaxHacker
-3. **Tax invoice validation** -- AI checks 8 required fields
-4. **VAT input/output tracking** -- enables monthly VAT workflow
-5. **PP30 VAT report generation** -- most critical monthly filing
-6. **WHT management with 50 Tawi certificates** -- second most critical monthly task
-7. **PND3 and PND53 report generation** -- monthly WHT filing
-8. **Tax calendar with reminders** -- prevent penalties
-9. **Excel export** -- accountant handoff
-
-### High Priority (Phase 2)
-
-1. **SME CIT calculation helpers** (PND50/PND51) -- annual/semi-annual, less urgent
-2. **Section 65 Tri expense flagging** -- annual CIT optimization
-3. **Revenue Dept XML export** -- advanced users want direct e-filing
-4. **FlowAccount-compatible export** -- migration path
-5. **Purchase/Sales tax ledger** -- formal tax audit support
-
-### Defer to v2
-
-1. **e-Tax Invoice digital signatures** -- requires CA infrastructure
-2. **Bank statement import** -- manual CSV first
-3. **Multi-user roles beyond basic** -- single user sufficient initially
-4. **Revenue threshold auto-detection** -- nice but not blocking
+- **Quotation requires Contact Picker:** Quotations always have a recipient. The existing Contact model (with Tax ID, branch, address) provides exactly what's needed. No new model required.
+- **Document Workflow requires Document Numbering Service:** All document types need independent sequential numbering. Build a shared service that manages number series per document type (QT, INV, RC, etc.).
+- **Invoice-to-Tax-Invoice requires existing tax invoice generator:** The v1.0 tax invoice creator already validates Section 86/4 fields. The workflow just pre-fills it from invoice data.
+- **Bank Reconciliation is independent of document chain:** Can be built in parallel. No dependency on quotation/invoice features.
+- **AI Description Parser enhances matching but is optional:** Auto-suggest matching works with amount+date alone. AI parsing of bank descriptions is a bonus, not a blocker.
 
 ---
 
-## Revenue Department Required Fields Reference
+## v1.1 Milestone Definition
 
-### Tax Invoice (ใบกำกับภาษี) - Section 86/4
+### Phase 1: Quotation System + Document Model Foundation
 
-Per Revenue Code Section 86/4, a standard tax invoice must contain:
+Build the document model and quotation features first because all downstream conversions depend on having a proper document abstraction.
 
-1. The word "Tax Invoice" (ใบกำกับภาษี) prominently displayed
-2. Name, address, and Tax ID of the issuer (VAT registrant)
-3. Name and address of the buyer
-4. Serial number and book number (if applicable)
-5. Description, type, category, quantity, and value of goods/services
-6. VAT amount clearly separated from the goods/services value
-7. Date of issuance
-8. Any additional particulars prescribed by the Director-General
+- [ ] **Document model (Prisma)** -- New model to unify quotations, invoices, receipts, delivery notes under one schema with `documentType` discriminator
+- [ ] **Document numbering service** -- Sequential numbering per document type per user, with configurable prefix format
+- [ ] **Quotation creation form** -- Thai-language line items, contact picker, validity date, notes, bank details
+- [ ] **Quotation PDF generation** -- THSarabunNew font, Buddhist Era dates, Section-compliant layout
+- [ ] **Quotation list with status tracking** -- Filter by status (draft/sent/accepted/rejected/expired)
+- [ ] **Quotation status management** -- Update status, auto-expire past validity date
 
-**Language requirement:** Must be in Thai language, Thai currency (Baht), and Thai or Arabic numerals.
+### Phase 2: Document Workflow Chain
 
-### WHT Certificate (50 Tawi) Required Fields
+Build conversion flows after the document model exists.
 
-1. Payer name, address, Tax ID
-2. Payee name, address, Tax ID
-3. Withholding method (at source / every time / one time)
-4. WHT rate applied
-5. Product/service category (Revenue Type code)
-6. Payment condition
-7. Gross amount paid
-8. WHT amount deducted
-9. Net amount after WHT
-10. Date of payment and withholding
-11. Sequential certificate number
+- [ ] **Quotation-to-invoice conversion** -- One-click with pre-filled data, editable before saving
+- [ ] **Invoice creation (standalone)** -- For cases without a prior quotation
+- [ ] **Invoice-to-receipt conversion** -- Mark as paid, generate receipt with payment date/method
+- [ ] **Invoice-to-tax-invoice conversion** -- Pre-fill existing tax invoice form from invoice data
+- [ ] **Document reference linking** -- Display chain: QT-001 -> INV-001 -> RC-001 with clickable navigation
+- [ ] **One-click full-chain shortcut** -- Quotation -> mark paid -> auto-create invoice + receipt + tax invoice (differentiator)
 
-### Non-Deductible Expenses (Section 65 Ter) - Key Categories for AI Flagging
+### Phase 3: Bank Reconciliation
 
-1. Personal expenses and gifts (not business-related)
-2. Tax penalties, surcharges, and criminal fines
-3. Artificial or fictitious expenses
-4. Expenses where recipient identity cannot be proven
-5. Entertainment expenses exceeding 0.3% of gross revenue (cap: 10M THB)
-6. Excessive shareholder/partner compensation
-7. Capital improvements misclassified as maintenance
-8. Donations exceeding 2% of net profit
+Independent workstream, can run in parallel with Phase 2.
+
+- [ ] **Bank account model** -- Name, bank name, account number, currency
+- [ ] **Bank statement import (CSV/Excel)** -- Column mapping UI, preview before import, Thai date format handling
+- [ ] **Imported transaction list** -- Sortable, filterable, with match status indicator
+- [ ] **Manual matching UI** -- Side-by-side view, click to match bank tx to BanChee tx
+- [ ] **Auto-suggest matching** -- Amount + date proximity algorithm, confidence score display
+- [ ] **Reconciliation summary** -- Per-account per-month: matched/unmatched counts, balance comparison
+- [ ] **AI description parsing** -- Optional differentiator: parse Thai bank descriptions for counterparty and type (defer if time-constrained)
+
+### Future Consideration (v2+)
+
+Features to defer until v1.1 core is working.
+
+- [ ] **e-Tax Invoice PDF/A-3 with digital signature** -- Revenue Department e-Tax compliance, requires XML generation and certificate management
+- [ ] **Partial payment and installment tracking** -- Full AR management with payment schedules
+- [ ] **Purchase order workflow** -- Mirror of sales document chain for procurement
+- [ ] **Direct bank API integration** -- When Thai Open Banking matures
+- [ ] **Customer-facing quotation approval portal** -- Online acceptance with e-signature
+
+---
+
+## Feature Prioritization Matrix
+
+| Feature | User Value | Implementation Cost | Priority | Phase |
+|---------|------------|---------------------|----------|-------|
+| Document model + numbering service | HIGH | MEDIUM | P1 | 1 |
+| Quotation creation + PDF | HIGH | MEDIUM | P1 | 1 |
+| Quotation status tracking | MEDIUM | LOW | P1 | 1 |
+| Quotation-to-invoice conversion | HIGH | LOW | P1 | 2 |
+| Invoice creation (standalone) | HIGH | MEDIUM | P1 | 2 |
+| Invoice-to-receipt conversion | HIGH | LOW | P1 | 2 |
+| Invoice-to-tax-invoice conversion | HIGH | LOW | P1 | 2 |
+| Document reference chain | MEDIUM | LOW | P1 | 2 |
+| Bank statement CSV/Excel import | HIGH | MEDIUM | P1 | 3 |
+| Manual matching UI | HIGH | MEDIUM | P1 | 3 |
+| Auto-suggest matching | MEDIUM | MEDIUM | P2 | 3 |
+| Reconciliation summary | MEDIUM | LOW | P2 | 3 |
+| One-click full-chain shortcut | MEDIUM | LOW | P2 | 2 |
+| AI bank description parsing | LOW | HIGH | P3 | 3 |
+| Delivery note generation | LOW | LOW | P3 | 2 |
+| AI quotation line item suggestion | LOW | MEDIUM | P3 | Future |
+| Purchase order creation | LOW | MEDIUM | P3 | Future |
+
+**Priority key:**
+- P1: Must have for v1.1 launch
+- P2: Should have, adds significant value
+- P3: Nice to have, defer if time-constrained
+
+---
+
+## Competitor Feature Analysis
+
+| Feature | FlowAccount | PEAK | BanChee v1.1 Approach |
+|---------|-------------|------|----------------------|
+| **Quotation creation** | Full template system, mobile app | Full template system | Template-based with Thai defaults, reuse invoice line item component |
+| **Document conversion** | QT -> INV -> Tax INV -> Receipt, one-click | QT -> INV -> Receipt, step-by-step | Step-by-step conversion + one-click shortcut for simple cases |
+| **Document statuses** | 6 statuses (Pending Approval through Cash Collected) | Similar status set | 4-5 statuses per doc type, auto-expire for quotations |
+| **Numbering** | Auto-sequential per type | Auto-sequential per type | Configurable prefix format per type (QT-YYMM-NNN default) |
+| **Bank reconciliation** | Manual matching, basic import | API with Krungthai, PDF/Excel import | CSV/Excel import, auto-suggest matching, optional AI parsing |
+| **Bank statement format** | CSV import | PDF + Excel import, Krungthai API | CSV + Excel import. No PDF parsing (too fragile). |
+| **Partial payments** | Supported | Supported | Deferred to v2 - paid/unpaid only for v1.1 |
+| **Delivery notes** | Supported, combined with invoice | Supported | Optional, combined format available |
+| **Purchase orders** | Supported | Supported | Deferred to v2 |
+| **AI features** | OCR receipt scanning | Bank API auto-import | AI receipt scanning (existing) + AI bank description parsing (new) + AI line item suggestions (future) |
+
+---
+
+## Thai Document Types Reference
+
+Complete list of Thai business documents relevant to v1.1, with Thai names and purposes.
+
+| Document | Thai Name | Purpose | Revenue Dept Required? | BanChee v1.1 |
+|----------|-----------|---------|----------------------|--------------|
+| Quotation | ใบเสนอราคา | Price proposal for customer review | No | YES - new |
+| Invoice / Billing Note | ใบแจ้งหนี้ / ใบวางบิล | Request payment for goods/services | No | YES - new |
+| Delivery Note | ใบส่งของ / ใบส่งสินค้า | Proof of goods delivery | No | Optional |
+| Tax Invoice | ใบกำกับภาษี | Legal VAT document per Section 86/4 | YES (VAT registered) | EXISTING - enhanced |
+| Receipt | ใบเสร็จรับเงิน | Proof of payment received | No (but standard practice) | YES - new |
+| Tax Invoice / Receipt | ใบกำกับภาษี/ใบเสร็จรับเงิน | Combined document, common in retail | YES (when combined) | Future enhancement |
+| Credit Note | ใบลดหนี้ | Reduce previously invoiced amount | YES (VAT registered) | EXISTING |
+| Debit Note | ใบเพิ่มหนี้ | Increase previously invoiced amount | YES (VAT registered) | EXISTING |
+| WHT Certificate | หนังสือรับรองการหักภาษี ณ ที่จ่าย (50 ทวิ) | Tax withholding proof | YES | EXISTING |
+| Purchase Order | ใบสั่งซื้อ | Procurement request to supplier | No | Future |
+
+### Document Numbering Conventions
+
+Standard Thai business numbering prefixes (not legally mandated, but widely used):
+
+| Document Type | Common Prefix | Format Example | BanChee Default |
+|---------------|--------------|----------------|-----------------|
+| Quotation | QT / ใบ.สน. | QT-2603-001 | QT-YYMM-NNN |
+| Invoice | INV / ใบ.จน. | INV-2603-001 | INV-YYMM-NNN |
+| Delivery Note | DN / ใบ.สข. | DN-2603-001 | DN-YYMM-NNN |
+| Tax Invoice | TAX / ใบ.กภ. | TAX-2603-001 | Existing system (already built) |
+| Receipt | RC / ใบ.สร. | RC-2603-001 | RC-YYMM-NNN |
+
+### Document Status Definitions
+
+| Document Type | Statuses | Auto-Transitions |
+|---------------|----------|-----------------|
+| Quotation | draft -> sent -> accepted / rejected / expired | Auto-expire past validity date |
+| Invoice | draft -> sent -> overdue / paid | Auto-overdue past due date |
+| Receipt | issued | Terminal state |
+| Tax Invoice | issued / voided | Manual void only |
+
+---
+
+## Bank Reconciliation Technical Details
+
+### Thai Bank Statement Formats
+
+Thai banks primarily export statements as PDF. CSV/Excel export availability varies:
+
+| Bank | PDF | CSV | Excel | Notes |
+|------|-----|-----|-------|-------|
+| SCB (ไทยพาณิชย์) | Yes | No (needs converter) | No | Third-party tools like scb-statement-converter exist |
+| KBank (กสิกร) | Yes | No (needs converter) | Some formats | VeryPDF and similar tools can convert |
+| Bangkok Bank (กรุงเทพ) | Yes | No | Limited | dStatement service via NDID |
+| Krungthai (กรุงไทย) | Yes | No | Yes (some) | PEAK has API deal for direct import |
+| TMBThanachart (ทีทีบี) | Yes | No | Some | Limited export options |
+
+**Implication for BanChee:** Must support flexible CSV column mapping because every bank's export format differs. Provide a "template" CSV format and instructions for users to convert their bank PDFs.
+
+### Recommended CSV Import Format
+
+```
+Date,Description,Debit,Credit,Balance
+25/03/2569,TFR/KBANK/นายสมชาย ใจดี,,50000.00,1250000.00
+25/03/2569,ค่าไฟฟ้า/MEA,3500.00,,1246500.00
+```
+
+Support both Thai date format (DD/MM/BBBB with Buddhist Era) and international format (YYYY-MM-DD). Auto-detect format on import.
+
+### Matching Algorithm Design
+
+**Tier 1 - Exact Match (HIGH confidence):**
+- Amount matches exactly (to satang)
+- Date within +/- 1 day
+- Auto-match if only one candidate
+
+**Tier 2 - Probable Match (MEDIUM confidence):**
+- Amount matches exactly
+- Date within +/- 3 days
+- Multiple candidates: show ranked list
+
+**Tier 3 - Possible Match (LOW confidence):**
+- Amount within +/- 1% tolerance
+- Date within +/- 7 days
+- Requires manual review
+
+**Unmatched:**
+- No amount match found
+- User must create new transaction or skip
+
+---
+
+## Data Model Implications
+
+### New Prisma Models Required
+
+**Document model** (unifies quotation, invoice, receipt, delivery note):
+```
+- id, userId, documentType, documentNumber, status
+- contactId (FK to Contact)
+- issueDate, dueDate, validUntil (for quotations)
+- referenceDocumentId (FK to self - for chain linking)
+- lineItems (JSON - same structure as existing InvoiceItem)
+- subtotal, vatAmount, vatRate, totalAmount (satang integers)
+- notes, bankDetails, paymentMethod
+- pdfPath (generated PDF location)
+- createdAt, updatedAt
+```
+
+**BankAccount model:**
+```
+- id, userId, bankName, accountName, accountNumber, currency
+- createdAt
+```
+
+**BankTransaction model:**
+```
+- id, userId, bankAccountId (FK)
+- transactionDate, description, debitAmount, creditAmount, balance
+- matchedTransactionId (FK to Transaction, nullable)
+- matchConfidence (high/medium/low/none)
+- importBatchId (group imported rows)
+- createdAt
+```
+
+### Existing Models to Extend
+
+**Contact model:** No changes needed. Already has name, taxId, branch, address, type.
+
+**Transaction model:** Add optional `documentId` field to link transactions to documents when created via document workflow.
 
 ---
 
 ## Sources
 
-### Competitor Products
-- [FlowAccount - Cloud Accounting Features](https://flowaccount.com/blog/cloud-accounting-software-thailand/)
-- [FlowAccount - AutoKey Receipt Scanning](https://flowaccount.com/en/autokey)
-- [FlowAccount - Tax Management](https://flowaccount.com/en/explore-more)
-- [FlowAccount - Pricing](https://flowaccount.com/en/pricing)
-- [PEAK Account - Pricing](https://www.peakaccount.com/pricing)
-- [AccRevo Platform](https://www.accrevo.com/)
-- [AccRevo - Innovation Thailand](https://www.innovationthailand.org/en/project-detail/AccRevo)
-- [Leceipt - e-Tax Invoice & e-Receipt](https://www.leceipt.com/en)
-- [Leceipt - Pricing](https://www.leceipt.com/en/pricing)
-- [SME Move - Online Accounting](https://smemove.com/index-en.php)
-- [VBA Partners - Best Accounting Software Thailand](https://vbapartners.com/accounting-software-for-businesses-in-thailand/)
+### Official / Government
+- [Thai Revenue Code Section 86 - Tax Invoice Requirements](https://library.siam-legal.com/thai-law/revenue-code-tax-invoice-debit-note-credit-note-section-86/)
+- [Revenue Department e-Tax Invoice & e-Receipt](https://etax.rd.go.th/)
+- [Thailand e-Tax Invoice Compliance Checklist 2025](https://www.gentlelawibl.com/post/thailand-e-tax-invoice-and-e-receipt-2025-a-compliance-checklist-for-smes)
+- [How to Issue Tax Invoice/Receipt in Thailand 2025](https://vbapartners.com/how-to-issue-a-tax-invoice-receipt-in-thailand/)
 
-### Thai Tax Law & Revenue Department
-- [Revenue Code Section 86/4 - Tax Invoice Requirements](https://www.rd.go.th/english/37741.html) (HIGH confidence - official source)
-- [Revenue Department - VAT Overview](https://www.rd.go.th/english/6043.html) (HIGH confidence)
-- [Revenue Department - PP30 Form](https://www.rd.go.th/fileadmin/download/english_form/frm_pp30.pdf) (HIGH confidence)
-- [Revenue Department - WHT Certificate Form](https://www.rd.go.th/fileadmin/download/english_form/frm_WTC.pdf) (HIGH confidence)
-- [PKF Thailand - e-Tax Invoice Requirements](https://pkfthailand.asia/understanding-e-tax-invoice-in-thailand/) (MEDIUM confidence)
+### Competitor Analysis
+- [FlowAccount - Quotation Features](https://flowaccount.com/en/functions/quotation)
+- [FlowAccount - Invoice Features](https://flowaccount.com/en/functions/invoice)
+- [FlowAccount - Tax Invoice Features](https://flowaccount.com/en/functions/tax-invoice)
+- [FlowAccount - Business Document Guide](https://flowaccount.com/blog/basic-business-document/)
+- [FlowAccount - Quotation Software Blog](https://flowaccount.com/blog/cloud-accounting-software-thailand-quotation/)
+- [PEAK - Create Invoice from Quotation](https://www.peakaccount.com/peak-manual/sales-document/invoice/create-invoice-from-quotation)
+- [PEAK - Receipt/Tax Invoice Creation](https://www.peakaccount.com/peak-manual/sales-document/receipt/create-receipt-tax-invoice)
+- [PEAK - Bank Reconciliation](https://www.peakaccount.com/blog/accounting/gen-acct/accounting-bank-reconciliation)
+- [FlowAccount - Bank Reconciliation](https://flowaccount.com/blog/what-is-bank-reconciliation/)
 
-### Tax Compliance Guides
-- [VBA Partners - Deductible Expenses Guide](https://vbapartners.com/deductible-expenses-for-thai-companies-ultimate-guide/) (MEDIUM confidence)
-- [VBA Partners - WHT Certificates](https://vbapartners.com/withholding-tax-certificates-in-thailand/) (MEDIUM confidence)
-- [VBA Partners - PND Forms & Filing](https://vbapartners.com/thailand-tax-submission-pnd-forms-filing-secrets/) (MEDIUM confidence)
-- [ExpatDen - PP30 Filing Guide](https://www.expatden.com/thailand/pp30-thailand/) (MEDIUM confidence)
-- [GentleLaw - WHT Filing 2026](https://www.gentlelawibl.com/post/thailand-withholding-tax-filing-2026-pnd3) (MEDIUM confidence)
-- [GentleLaw - Compliance Calendar 2026](https://www.gentlelawibl.com/post/thailand-compliance-calendar-2026-for-foreign-smes-monthly-tax-sso-and-dbd-deadlines) (MEDIUM confidence)
-- [KPMG - 2025 Thailand Tax Calendar](https://assets.kpmg.com/content/dam/kpmg/th/pdf/2024/12/2025-thailand-tax-calendar-english.pdf) (HIGH confidence)
-- [PWC - Thailand Corporate Tax Administration](https://taxsummaries.pwc.com/thailand/corporate/tax-administration) (HIGH confidence)
-- [TMA Group - Section 65 Ter Analysis](https://tmathaigroup.com/blogeng/index.php/post/45.html) (MEDIUM confidence)
+### Technical / Industry
+- [SCB Statement Converter (GitHub)](https://github.com/shlomki/scb-statement-converter)
+- [Thai Banks CSV Export Limitations (ASEAN NOW)](https://aseannow.com/topic/1297452-thai-banks-dont-give-out-statements-in-excel-or-csv-format/)
+- [Best Accounting Software Thailand](https://vbapartners.com/accounting-software-for-businesses-in-thailand/)
+- [Top Accounting Software Thailand (Pimaccounting)](https://pimaccounting.com/blog/accounting/249-top-accounting-software-for-small-businesses-in-thailand)
+
+---
+*Feature research for: BanChee v1.1 Document Workflow & Bank Reconciliation*
+*Researched: 2026-03-25*

@@ -1,239 +1,298 @@
-# Technology Stack: Thai Tax Compliance Layer
+# Stack Research: v1.1 Document Workflow & Bank Reconciliation
 
-**Project:** BanChee - Thai Tax Compliance Extension
-**Researched:** 2026-03-23
-**Overall confidence:** HIGH (verified via npm, official docs, GitHub repos)
+**Project:** BanChee v1.1 -- Quotation, Document Workflow, Bank Reconciliation
+**Researched:** 2026-03-25
+**Confidence:** HIGH
+**Scope:** Additions/changes for NEW v1.1 features only. See previous STACK.md commit for v1.0 base stack.
 
-## Recommended Stack
+## Executive Summary
 
-### Core Framework (Inherited from TaxHacker -- NO Changes)
+The v1.1 features (quotation system, document workflow chain, bank reconciliation) require **zero new npm dependencies**. The existing stack -- Prisma, @react-pdf/renderer, @fast-csv/parse, Zod, date-fns -- already covers every technical need. The work is application-layer code (new Prisma models, new PDF templates, new server actions), not new library integration.
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| Next.js | ^15.2.4 | App framework | Inherited, App Router + Server Actions |
-| Prisma | ^6.6.0 | ORM + migrations | Inherited, schema-driven, type-safe |
-| PostgreSQL | 17 | Database | Inherited, robust JSON support for tax metadata |
-| shadcn/ui | Latest | UI components | Inherited, Tailwind-based |
-| Better Auth | ^1.2.10 | Authentication | Inherited, self-hosted mode bypass |
-| LangChain | ^0.3.30 | LLM orchestration | Inherited, multi-provider fallback chain |
-| @react-pdf/renderer | ^4.3.0 | PDF generation | Inherited, already in codebase |
-| @fast-csv/format | ^5.0.2 | CSV generation | Inherited, used for RD Prep pipe-delimited export |
-| react-day-picker | ^8.10.1 | Date picker | Inherited, upgrade to v9 for Buddhist calendar |
-| date-fns | ^3.6.0 | Date utilities | Inherited, filing deadline calculations |
-| Zod | ^3.24.2 | Validation | Inherited, tax form field validation |
+This is a significant finding: what initially looks like three complex features (state machine for workflow, OFX parser for bank statements, fuzzy matching for reconciliation) resolves to straightforward Prisma schema design + business logic in TypeScript.
 
-### New Dependencies for Thai Tax Features
+## What's Already Installed That Covers v1.1
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| next-intl | ^4.8.3 | i18n (Thai/English) | Best Next.js App Router + Server Component support. Uses locale prefix "never" to avoid URL restructuring. Native Server Component support without client wrappers. | HIGH |
-| exceljs | ^4.4.0 | Excel report generation | Server-side .xlsx with cell styling (borders, merged cells, number formats). Built-in TypeScript types. Thai accountant report format requires rich formatting that SheetJS community edition lacks. | HIGH |
-| thai-baht-text | ^2.0.5 | Number-to-text conversion | Converts numbers to Thai baht text (e.g., 10050 -> "หนึ่งหมื่นห้าสิบบาทถ้วน"). Required for WHT certificates and tax invoices. Written in TypeScript, works in Node.js and browser. MIT license. | HIGH |
-| @fontsource/noto-sans-thai | Latest | Thai web font (UI) | Self-hosted Noto Sans Thai for the web UI. Google-backed, SIL Open Font License. Variable weight support (100-900). Eliminates Google Fonts CDN dependency for self-hosted privacy. | HIGH |
+| Existing Dependency | v1.1 Use Case | Why It's Sufficient |
+|---------------------|---------------|---------------------|
+| Prisma ^6.6.0 | Document models (Quotation, Receipt), workflow status tracking, sequential numbering, bank statement storage | Schema-driven, type-safe, atomic operations for counter increment, relation modeling for document chain |
+| @react-pdf/renderer ^4.3.0 | Quotation PDF, Receipt PDF, Delivery Note PDF, Billing Note PDF | Already renders Thai PDFs with THSarabunNew. Invoice PDF template exists as reference pattern. |
+| @fast-csv/parse ^5.0.2 | Bank statement CSV import | Already installed. Thai banks export CSV (not OFX). Parse columns: date, description, withdrawal, deposit, balance. |
+| @fast-csv/format ^5.0.2 | Export reconciliation reports | Already installed. Same pipe-delimited pattern used for RD export. |
+| ExcelJS ^4.4.0 | Bank statement Excel import (some banks export .xlsx) | Already installed. Can read .xlsx files, not just write them. `workbook.xlsx.load(buffer)` parses uploaded Excel. |
+| Zod ^3.24.2 | Quotation form validation, bank statement column mapping validation | Already installed. Add new schemas for quotation items, document conversion, CSV column mapping. |
+| date-fns ^3.6.0 | Due date calculation (quotation validity period), payment terms | Already installed. `addDays()`, `differenceInDays()`, `format()` cover all needs. |
+| LangChain ^0.3.30 | AI-assisted bank statement categorization, auto-matching suggestions | Already installed. Can use existing LLM pipeline to suggest transaction matches. |
+| shadcn/ui | Quotation form UI, document status badges, reconciliation table, stepper/timeline | Already installed. Table, Badge, Dialog, Tabs, Select components cover the UI needs. |
+| Lucide React ^0.475.0 | Document status icons, workflow chain visualization | Already installed. FileText, Receipt, ArrowRight, CheckCircle, AlertCircle icons. |
+| sonner ^2.0.1 | Toast notifications for document actions (created, converted, reconciled) | Already installed. |
 
-### Dependencies to Upgrade (Already Installed)
+## New Dependencies: NONE Required
 
-| Technology | Current | Target | Purpose | Why Upgrade |
-|------------|---------|--------|---------|-------------|
-| react-day-picker | ^8.10.1 | ^9.14.0 | Buddhist calendar date picker | v9.11.0+ adds native Buddhist calendar: `import { DayPicker } from "react-day-picker/buddhist"`. Displays years in B.E. (2568 instead of 2025) by default with Thai locale and Thai numerals. Eliminates need for separate Thai date picker library. |
+### Why No State Machine Library (XState)
 
-### Thai Font Files (Manual Download, Not npm)
+The document workflow is a **linear progression with status flags**, not a complex state machine:
 
-| Font | Source | Purpose | Why |
-|------|--------|---------|-----|
-| TH Sarabun New (Regular + Bold) | f0nt.com (official Thai government release) | PDF generation for tax forms | Standard Thai government document font. Required by Revenue Department for official forms (ภ.พ.30, WHT certificates). Register via `@react-pdf/renderer` Font.register(). Free, no license restriction. |
-| Noto Sans Thai (ttf/otf) | Google Fonts / fontsource | PDF generation fallback | Modern alternative if TH Sarabun causes rendering issues in @react-pdf/renderer. Google-backed, excellent glyph coverage. |
-
-### Existing Dependencies Leveraged (No New Install)
-
-| Technology | Current Version | New Purpose | Notes |
-|------------|-----------------|-------------|-------|
-| @react-pdf/renderer | ^4.3.0 | Thai tax form PDFs (ภ.พ.30, WHT certificates, ภ.ง.ด.3/53 forms) | Already installed. Register Thai fonts via Font.register({ family: 'THSarabunNew', src: '/fonts/THSarabunNew.ttf' }). Some users report Thai character rendering issues -- test early with Noto Sans Thai as fallback. |
-| @fast-csv/format | ^5.0.2 | RD Prep pipe-delimited TXT export | Already installed. RD Prep accepts pipe-delimited ("\|") .txt files with headers on first row. Use @fast-csv with custom delimiter config. |
-| Zod | ^3.24.2 | Thai tax form validation (TIN format: 13 digits, VAT registration, WHT rate validation) | Already installed. Add Thai-specific validation schemas. |
-| date-fns | ^3.6.0 | Filing deadline calculations, Buddhist year display | Already installed. Buddhist year = CE year + 543. Simple arithmetic, no library needed for conversion. Use date-fns for deadline math (e.g., "15th of next month for VAT"). |
-| Intl.NumberFormat | Built-in | Thai baht currency formatting | Node.js built-in. `new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' })`. Handles grouping separators and baht symbol. No library needed. |
-| LangChain (existing AI pipeline) | ^0.3.30 | Thai receipt OCR + tax field extraction | Already installed with vision support. LLM vision APIs (GPT-4o, Gemini) outperform Tesseract for Thai receipt extraction (94% vs ~87% accuracy). Add Thai-specific extraction prompts for Tax ID, VAT amount, WHT rate, branch number. |
-
-## Thai-Specific Technical Details
-
-### Currency and Number Formatting
-
-**Use native `Intl.NumberFormat` -- no library needed.**
-
-```typescript
-// Thai baht with symbol
-new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(1234.56)
-// Output: "฿1,234.56"
-
-// Thai numerals (for display on forms)
-new Intl.NumberFormat('th-TH-u-nu-thai', { style: 'currency', currency: 'THB' }).format(1234.56)
-// Output: "฿๑,๒๓๔.๕๖"
-
-// Baht text for official documents (requires thai-baht-text)
-import { ThaiBahtText } from 'thai-baht-text';
-ThaiBahtText(1234.56) // "หนึ่งพันสองร้อยสามสิบสี่บาทห้าสิบหกสตางค์"
+```
+Quotation (draft -> sent -> accepted -> expired/rejected)
+    |
+    v [convert action]
+Invoice (draft -> sent -> partial -> paid -> overdue)
+    |
+    v [confirm payment action]
+Receipt (issued)
 ```
 
-### Buddhist Calendar / Date Handling
-
-**Approach: Simple arithmetic + react-day-picker v9 Buddhist calendar.**
-
-No special date library needed. Buddhist Era year = Gregorian year + 543.
+This is modeled as a simple `status` string column on each document model with a pure TypeScript function validating transitions:
 
 ```typescript
-// Display Buddhist year
-const getBuddhistYear = (date: Date): number => date.getFullYear() + 543;
+// This is all the "state machine" logic needed
+const QUOTATION_TRANSITIONS: Record<string, string[]> = {
+  draft: ["sent", "cancelled"],
+  sent: ["accepted", "rejected", "expired"],
+  accepted: ["converted"],  // triggers invoice creation
+  // terminal states: rejected, expired, cancelled, converted
+}
 
-// Format Thai date: "23 มีนาคม 2569"
-const formatThaiDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('th-TH', {
-    year: 'numeric', month: 'long', day: 'numeric',
-    calendar: 'buddhist'
-  }).format(date);
-};
+function canTransition(currentStatus: string, targetStatus: string): boolean {
+  return QUOTATION_TRANSITIONS[currentStatus]?.includes(targetStatus) ?? false
+}
 ```
 
-For date picker UI, upgrade react-day-picker to v9.14.0:
+**Why NOT XState:**
+- XState v5 adds ~15kB gzipped to the bundle for a feature that needs ~20 lines of TypeScript
+- The workflow has 4-5 states with 6-7 transitions total -- XState is designed for dozens/hundreds of states
+- XState's actor model and parallel states are unused -- no concurrent state regions needed
+- No guards, delays, or side-effect orchestration that XState excels at
+- The status is persisted in PostgreSQL, not in-memory -- XState's runtime state management adds no value
+- Adding XState creates a learning curve for contributors disproportionate to the problem complexity
+
+### Why No OFX Parser Library
+
+Thai banks (SCB, KBank, Bangkok Bank, Krungthai) do **not** export OFX files. The standard export formats are:
+- **PDF statements** (primary format, all banks)
+- **CSV files** (available from internet banking, varying column formats per bank)
+- **Excel files** (some banks like Bangkok Bank dStatement)
+
+Since BanChee targets Thai SMEs, OFX support would serve zero users. `@fast-csv/parse` (already installed) handles CSV. ExcelJS (already installed) handles .xlsx. PDF statement parsing can use the existing LLM vision pipeline.
+
+If OFX support is ever needed (international users), `ofx-data-extractor` (v1.4.8, TypeScript, MIT, ~1,300 weekly downloads) is the best option -- but defer until there's actual demand.
+
+### Why No Fuzzy Matching Library (Fuse.js)
+
+Bank reconciliation matching uses **deterministic criteria first**:
+1. **Exact amount match** (same satang value) -- catches 70%+ of transactions
+2. **Date range match** (within +/- 3 days of transaction date) -- narrows candidates
+3. **Description contains merchant name** -- simple `String.includes()` or SQL `ILIKE`
+
+This deterministic approach handles 90%+ of reconciliation cases. For the remaining edge cases, the LLM pipeline can suggest matches using the existing LangChain infrastructure (send unmatched bank entries + unmatched transactions to the LLM for matching suggestions).
+
+Fuse.js (6kB gzipped) is a fine library, but adding it for the 5-10% of cases where simple string matching fails is premature when the LLM pipeline already exists.
+
+### Why No Document Numbering Library
+
+Thai business documents use format-based sequential numbering:
+- Quotation: `QT-{YYYY}-{NNNN}` (e.g., `QT-2568-0001`)
+- Invoice: `INV-{YYYY}-{NNNN}`
+- Receipt: `REC-{YYYY}-{NNNN}`
+- Delivery Note: `DN-{YYYY}-{NNNN}`
+
+This is a Prisma atomic counter operation, not a UUID/nanoid problem:
+
 ```typescript
-import { DayPicker } from 'react-day-picker/buddhist';
-// Automatically displays B.E. years, Thai locale, Thai numerals
+// Atomic increment in Prisma -- no race conditions
+const counter = await prisma.documentCounter.upsert({
+  where: { userId_type_year: { userId, type: "quotation", year: 2568 } },
+  update: { value: { increment: 1 } },
+  create: { userId, type: "quotation", year: 2568, value: 1 },
+})
+const docNumber = `QT-${year}-${String(counter.value).padStart(4, "0")}`
 ```
 
-### Revenue Department e-Filing Export
+## Prisma Schema Additions (New Models)
 
-**Format: Pipe-delimited TXT files (not XML) for most forms.**
+The v1.1 features need these new models (not library choices, but schema design that drives the stack):
 
-The Revenue Department's RD Prep program accepts pipe-delimited ("|") .txt files or .csv files. These are converted to .rdx format by RD Prep for upload to efiling.rd.go.th.
+```prisma
+model Quotation {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentNumber  String    @map("document_number")
+  contactId       String    @map("contact_id") @db.Uuid
+  status          String    @default("draft")  // draft|sent|accepted|rejected|expired|converted|cancelled
+  items           Json      @default("[]")
+  subtotal        Int       // satang
+  vatAmount       Int       @map("vat_amount")
+  totalAmount     Int       @map("total_amount")
+  validUntil      DateTime? @map("valid_until")
+  notes           String?
+  terms           String?
+  convertedToId   String?   @map("converted_to_id") @db.Uuid  // -> Invoice transaction ID
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-Key forms and their export approach:
-- **ภ.ง.ด.3 (WHT for individuals)**: Pipe-delimited TXT with fields: tax ID, name, address, income type, payment amount, WHT rate, WHT amount, etc.
-- **ภ.ง.ด.53 (WHT for companies)**: Same format as ภ.ง.ด.3, different income type codes
-- **ภ.พ.30 (monthly VAT)**: Form data + purchase/sales tax ledger as attachment
+  @@unique([userId, documentNumber])
+  @@index([userId])
+  @@index([status])
+  @@map("quotations")
+}
 
-**Important: There is NO public Revenue Department API.** All e-filing is manual upload through the RD Prep program or the efiling.rd.go.th web portal. BanChee generates the file, user uploads manually.
+model DocumentCounter {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  type   String // quotation|invoice|receipt|delivery_note|billing_note
+  year   Int    // Buddhist Era year
+  value  Int    @default(0)
 
-**For e-Tax Invoice XML:** The ETDA standard ขมธอ.3-2560 defines XML schema for electronic tax invoices and receipts. This is out of scope for v1 (requires digital certificate from a Certificate Authority + Revenue Department registration). Deferred to v2.
+  @@unique([userId, type, year])
+  @@map("document_counters")
+}
 
-### Thai OCR / Receipt Scanning
+model BankStatement {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankName        String   @map("bank_name")
+  accountNumber   String   @map("account_number")
+  importedAt      DateTime @default(now()) @map("imported_at")
+  fileName        String   @map("file_name")
+  totalEntries    Int      @default(0) @map("total_entries")
+  matchedEntries  Int      @default(0) @map("matched_entries")
 
-**Use existing LLM vision pipeline -- do NOT add Tesseract.**
+  entries         BankEntry[]
 
-The existing TaxHacker AI pipeline already supports vision-based document analysis via GPT-4o, Gemini, and Mistral. Research shows:
-- LLM vision APIs achieve 91-94% accuracy on receipt/invoice extraction
-- Tesseract achieves ~87% on Thai documents and requires significant preprocessing
-- LLMs handle structured data extraction (JSON output) natively
-- The existing LangChain pipeline with `.withStructuredOutput()` is the ideal approach
+  @@index([userId])
+  @@map("bank_statements")
+}
 
-Enhancement: Add Thai-specific extraction fields to the AI prompt:
-- เลขประจำตัวผู้เสียภาษี (Tax ID, 13 digits)
-- สาขาที่ (Branch number, 5 digits, "00000" for head office)
-- ภาษีมูลค่าเพิ่ม (VAT amount)
-- อัตราหัก ณ ที่จ่าย (WHT rate: 1%, 2%, 3%, 5%)
-- ประเภทเงินได้ (Income type code for WHT classification)
+model BankEntry {
+  id              String    @id @default(uuid()) @db.Uuid
+  statementId     String    @map("statement_id") @db.Uuid
+  statement       BankStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  date            DateTime
+  description     String
+  withdrawal      Int?      // satang (null if deposit)
+  deposit         Int?      // satang (null if withdrawal)
+  balance         Int?      // satang
+  transactionId   String?   @map("transaction_id") @db.Uuid  // matched Transaction
+  matchConfidence String?   @map("match_confidence")  // exact|suggested|manual
+  matchedAt       DateTime? @map("matched_at")
+
+  @@index([statementId])
+  @@index([transactionId])
+  @@map("bank_entries")
+}
+```
+
+## Integration Points with Existing Code
+
+### Quotation System
+
+| Integration Point | Existing Code | New Code Needed |
+|-------------------|---------------|-----------------|
+| PDF generation | `app/(app)/apps/invoices/actions.ts` -- `generateInvoicePDF()` | Clone pattern for `generateQuotationPDF()`. Same `renderToBuffer()` + THSarabunNew approach. |
+| Contact selection | `models/contacts.ts` -- `searchContacts()`, `getContactById()` | Reuse directly. Add Contact relation to Quotation model. |
+| Document template | `app/(app)/apps/invoices/default-templates.ts` -- `InvoiceTemplate` | Create `QuotationTemplate` following same pattern. Add Thai labels. |
+| App data storage | `models/apps.ts` -- `getAppData()`, `setAppData()` | Reuse for quotation template storage. App key: `"quotations"`. |
+| Form validation | `forms/transactions.ts` -- Zod schemas | Create `forms/quotations.ts` with quotation-specific Zod schema. |
+| File storage | `lib/files.ts` -- `safePathJoin()`, file upload path utilities | Reuse for quotation PDF storage. Same user directory structure. |
+
+### Document Workflow Chain
+
+| Integration Point | Existing Code | New Code Needed |
+|-------------------|---------------|-----------------|
+| Convert quotation to invoice | `models/transactions.ts` -- `createTransaction()` | New action: copy quotation items/amounts into a Transaction with type "income". Set `convertedToId` on quotation. |
+| Invoice to receipt | `app/(app)/apps/invoices/actions.ts` -- `saveInvoiceAsTransactionAction()` | New action: generate receipt PDF from paid invoice transaction. Receipt is a confirmation document, not a new transaction. |
+| Status tracking | -- | New: `models/quotations.ts` with `updateQuotationStatus()` using transition validation function. |
+| Document chain display | -- | New: UI component showing linked documents (quotation -> invoice -> receipt) with status badges. |
+
+### Bank Reconciliation
+
+| Integration Point | Existing Code | New Code Needed |
+|-------------------|---------------|-----------------|
+| CSV parsing | `@fast-csv/parse` already installed, used in `models/export_and_import.ts` | New: `models/bank-statements.ts` with `importBankStatement()` using `@fast-csv/parse`. |
+| Excel parsing | `exceljs` already installed | New: Add `.xlsx` import path using `workbook.xlsx.load(buffer)`. |
+| Transaction matching | `models/transactions.ts` -- `getTransactions()` with filters | New: Query transactions by date range + amount for matching candidates. |
+| AI-assisted matching | `ai/analyze.ts` -- LangChain pipeline | New: Prompt template for "match these bank entries to these transactions". |
+| File upload | `lib/files.ts` -- upload utilities | Reuse for bank statement file storage. |
 
 ## Alternatives Considered
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| i18n | next-intl ^4.8.3 | react-i18next | react-i18next requires client-side provider wrapping incompatible with Server Components. next-i18next is Pages Router only. |
-| i18n | next-intl ^4.8.3 | Intlayer | Newer, smaller community, less battle-tested. next-intl has 4800+ GitHub stars and proven Next.js 15 support. |
-| Excel | exceljs ^4.4.0 | SheetJS (xlsx) community | SheetJS community edition lacks cell styling -- Thai accountant reports require borders, merged cells, number formats, colored headers. SheetJS Pro is paid. Also has known security vulnerabilities. |
-| Excel | exceljs ^4.4.0 | xlsx-populate | Less maintained (last npm publish 5+ years ago), smaller community. |
-| PDF | @react-pdf/renderer (keep) | pdfmake | Already in codebase. Switching adds migration risk and increases bundle. Font.register() API works for Thai fonts. |
-| PDF | @react-pdf/renderer (keep) | Puppeteer | Requires headless Chrome in Docker (heavy), serverless-hostile, overkill for structured tax form PDFs. Only advantage is better non-Latin font support, but @react-pdf/renderer works with registered Thai fonts. |
-| Buddhist date | react-day-picker v9 (upgrade) | thaidatepicker-react | thaidatepicker-react is a separate library adding a new dependency. react-day-picker is already installed -- upgrading to v9 gives native Buddhist calendar. Fewer dependencies, better maintained. |
-| Buddhist date | Simple arithmetic + Intl.DateTimeFormat | date-fns-buddhist-adapter | date-fns-buddhist-adapter has 717 weekly downloads (low adoption). Built-in Intl.DateTimeFormat with `calendar: 'buddhist'` handles formatting. Simple year+543 arithmetic handles conversion. No library needed. |
-| Baht text | thai-baht-text ^2.0.5 | @n0uur/thaibaht-text | thai-baht-text is TypeScript-native, more downloads, MIT license. @n0uur/thaibaht-text is wrapper around other libs. |
-| Baht text | thai-baht-text ^2.0.5 | bahttext | bahttext has fewer features, less TypeScript support. |
-| Thai OCR | Existing LLM vision pipeline | Tesseract.js | LLM vision APIs outperform Tesseract on Thai documents (94% vs 87%). Tesseract requires preprocessing, language training data, and cannot output structured JSON natively. LangChain pipeline already handles this. |
-| Tax calculation | Pure TypeScript functions | External tax API | No Thai tax calculation API exists. Tax rules are simple enough for pure TypeScript (flat 7% VAT, progressive WHT rates, progressive CIT brackets). Self-hosted requirement means no external API dependencies. |
-| RD filing | Pipe-delimited TXT export + manual upload | Direct API submission | rd.go.th has no public API. Manual upload via RD Prep is the standard workflow used by all Thai accounting software including FlowAccount and PEAK. |
-| FlowAccount compat | Excel/CSV export matching FA format | FlowAccount API SDK | FlowAccount has a TypeScript SDK (flowaccount-openapi-sdk on GitHub) but requires subscription and API credentials. Export in compatible Excel format is simpler and works for all accountants, not just FlowAccount users. |
-| Web font | @fontsource/noto-sans-thai | Google Fonts CDN | Self-hosted app should not depend on external CDNs. Fontsource provides npm package for self-hosting. Privacy-first approach. |
+| Category | Decision | Alternative | Why Not |
+|----------|----------|-------------|---------|
+| Document workflow | Status column + TypeScript transitions | XState v5 | Overkill: ~15kB for 20 lines of transition logic. 4-5 states, not dozens. Status persisted in DB, not in-memory. |
+| Document workflow | Status column + TypeScript transitions | Robot3 (lightweight FSM) | Still unnecessary overhead. The "state machine" is a Record<string, string[]> lookup. |
+| Bank statement format | CSV + Excel import only | OFX parser (ofx-data-extractor) | Thai banks don't export OFX. Zero users would benefit. Defer to if/when international expansion. |
+| Bank statement format | CSV + Excel import only | QIF parser | QIF is legacy Quicken format. Not used by Thai banks. |
+| Transaction matching | Amount + date + description matching | Fuse.js fuzzy search | Deterministic matching covers 90%+. LLM pipeline handles edge cases. Adding Fuse.js is premature. |
+| Transaction matching | Amount + date + description matching | fast-fuzzy | Same reasoning as Fuse.js. |
+| Sequential numbering | Prisma atomic counter | nanoid/CUID | Business document numbers must be sequential and human-readable (QT-2568-0001), not random strings. |
+| Sequential numbering | Prisma atomic counter | PostgreSQL SEQUENCE | Prisma doesn't expose raw sequences well. Upsert with increment is portable and works with the existing Prisma setup. |
+| Quotation PDF | @react-pdf/renderer (existing) | Puppeteer HTML-to-PDF | Already in the project. Adding Puppeteer means headless Chrome in Docker (~400MB). Quotation is a structured document, not free-form HTML. |
+| Quotation PDF | @react-pdf/renderer (existing) | pdfmake | Switching PDF libraries mid-project creates inconsistency. @react-pdf/renderer already works with THSarabunNew. |
+
+## What NOT to Add
+
+| Avoid | Why | What to Do Instead |
+|-------|-----|-------------------|
+| XState or any state machine library | Document workflow has 4-5 states with simple linear transitions. A status column + 20 lines of validation TypeScript is sufficient. XState adds bundle weight, learning curve, and complexity for a problem that doesn't warrant it. | `status` string column + `VALID_TRANSITIONS` lookup object |
+| OFX parser | Thai banks don't export OFX. Zero Thai SME users would benefit from OFX support. | CSV import with `@fast-csv/parse` (already installed) + Excel import with ExcelJS (already installed) |
+| Fuse.js or fuzzy matching library | Bank reconciliation matching is primarily by exact amount + date proximity. The 5-10% edge cases are better handled by the existing LLM pipeline than a string-matching library. | Exact amount match + date range + SQL ILIKE for description. LLM for unmatched suggestions. |
+| nanoid / CUID / Snowflake ID | Business documents need sequential, human-readable numbers (QT-2568-0001), not random IDs. The document's UUID primary key is separate from the display number. | Prisma atomic counter upsert |
+| Puppeteer / Playwright for PDF | Headless Chrome adds ~400MB to Docker image. @react-pdf/renderer already generates Thai PDFs. | Continue using @react-pdf/renderer with THSarabunNew font |
+| Separate workflow engine (n8n, Temporal) | Self-hosted single-user app doesn't need distributed workflow orchestration. The document chain is request-response, not long-running async. | Server actions with status validation |
+| React Email for document notifications | No email notifications planned for v1.1. Documents are managed in the UI. | Defer to v1.2 if LINE/email notifications are added. |
 
 ## Installation
 
 ```bash
-# New dependencies
-npm install next-intl exceljs thai-baht-text @fontsource/noto-sans-thai
+# No new packages to install for v1.1.
+# All required libraries are already in package.json.
 
-# Upgrade react-day-picker from v8 to v9 for Buddhist calendar
-npm install react-day-picker@^9.14.0
-
-# Thai font for PDF generation (manual download, not npm)
-# Download TH Sarabun New from: https://www.f0nt.com/release/th-sarabun-new/
-# Place THSarabunNew.ttf and THSarabunNew-Bold.ttf in: public/fonts/
-# Also download Noto Sans Thai from Google Fonts as fallback
+# Only Prisma migration is needed:
+npx prisma migrate dev --name add_quotation_document_workflow_bank_reconciliation
 ```
 
-## No Additional Infrastructure
+## Version Compatibility
 
-BanChee runs as a single Docker container with PostgreSQL. The Thai tax extension does NOT require:
-- Redis or message queues (tax calculations are synchronous)
-- Background worker processes (deadline reminders shown on dashboard load)
-- External APIs (all tax calculation is local pure TypeScript)
-- Additional file storage services (uses existing local filesystem)
-- Cloud services of any kind (self-hosted first)
-- Additional system dependencies in Docker (Ghostscript + GraphicsMagick already present)
-- Tesseract OCR engine (LLM vision pipeline handles Thai receipt scanning)
+| Existing Package | Version | v1.1 Compatibility | Notes |
+|------------------|---------|---------------------|-------|
+| @prisma/client | ^6.6.0 | Full | New models follow existing patterns (UUID PK, @map, @@index) |
+| @react-pdf/renderer | ^4.3.0 | Full | Same `renderToBuffer()` + `createElement()` pattern as invoice PDF |
+| @fast-csv/parse | ^5.0.2 | Full | Already used for CSV import. Bank statement is another CSV format. |
+| exceljs | ^4.4.0 | Full | Already used for export. `.xlsx.load()` reads Excel files for import. |
+| zod | ^3.24.2 | Full | New schemas for quotation, bank statement column mapping |
+| date-fns | ^3.6.0 | Full | `addDays()` for quotation validity, `isAfter()` for expiry check |
+| langchain | ^0.3.30 | Full | New prompt templates for bank statement matching suggestions |
 
-## Docker Impact
+## Risk Assessment
 
-The only Docker change needed is adding Thai font files to the image:
-
-```dockerfile
-# Add Thai fonts for PDF generation
-COPY public/fonts/THSarabunNew*.ttf /usr/share/fonts/thai/
-COPY public/fonts/NotoSansThai*.ttf /usr/share/fonts/thai/
-RUN fc-cache -fv
-```
-
-## Configuration Impact
-
-New environment variables (all optional):
-
-```env
-# No new required env vars for Thai tax features
-# next-intl uses file-based translations (messages/th.json, messages/en.json)
-# Tax rules are hardcoded as constants (they change infrequently)
-# Thai font paths are convention-based (public/fonts/)
-```
-
-## Dependency Risk Assessment
-
-| Dependency | Weekly Downloads | Last Published | Risk |
-|------------|-----------------|----------------|------|
-| next-intl | ~500K+ | 1 month ago (v4.8.3) | LOW - actively maintained, large community |
-| exceljs | ~1M+ | 2 years ago (v4.4.0) | LOW-MEDIUM - stable but not recently updated. Feature-complete for our needs. |
-| thai-baht-text | ~1K | 1 year ago (v2.0.5) | LOW - small niche library but does one thing well. Easy to vendor/fork if abandoned. |
-| @fontsource/noto-sans-thai | N/A | Active | LOW - Google-backed font project |
-| react-day-picker v9 | ~2M+ | 22 days ago (v9.14.0) | LOW - very actively maintained |
+| Area | Risk | Mitigation |
+|------|------|------------|
+| Bank CSV format variation | Each Thai bank has different CSV column layouts | Build configurable column mapping UI. Let user map columns on first import. Save mapping per bank for reuse. |
+| Quotation-to-invoice data integrity | Converting quotation must atomically create invoice + update quotation status | Use Prisma `$transaction([...])` for atomic multi-model operations |
+| Sequential number gaps | Deleted quotations leave gaps in numbering sequence | Accept gaps -- Thai Revenue Department does not require gap-free numbering for quotations (only tax invoices). Document this in UI. |
+| Thai PDF rendering edge cases | Complex quotation layouts with many items may have pagination issues | Test with 20+ line item quotations. @react-pdf/renderer handles page breaks via `break` prop. |
+| Bank reconciliation accuracy | False positive matches (same amount, wrong transaction) | Show match confidence level. Require user confirmation for all matches. Never auto-reconcile without review. |
 
 ## Sources
 
-- [next-intl official docs - App Router setup](https://next-intl.dev/docs/getting-started/app-router) -- confirmed v4.8.3, Server Component support [HIGH]
-- [next-intl v4.0 announcement](https://next-intl.dev/blog/next-intl-4-0) -- confirmed stable release [HIGH]
-- [ExcelJS GitHub](https://github.com/exceljs/exceljs) -- v4.4.0, TypeScript types built-in [HIGH]
-- [ExcelJS npm](https://www.npmjs.com/package/exceljs) -- confirmed version and features [HIGH]
-- [@react-pdf/renderer font docs](https://react-pdf.org/fonts) -- Font.register() API [HIGH]
-- [Thai Font in React-pdf (Medium)](https://mchayapol.medium.com/thai-font-%E0%B9%83%E0%B8%99-react-pdf-48049c9d54a5) -- working example with TH Sarabun [MEDIUM]
-- [react-pdf Thai character issue #633](https://github.com/diegomura/react-pdf/issues/633) -- historical issues noted [MEDIUM]
-- [thai-baht-text npm](https://www.npmjs.com/package/thai-baht-text) -- v2.0.5, TypeScript, MIT [HIGH]
-- [thai-baht-text GitHub](https://github.com/antronic/thai-baht-text-js) -- source code, examples [HIGH]
-- [react-day-picker Buddhist calendar](https://daypicker.dev/docs/localization) -- v9.11.0+ Buddhist calendar support [HIGH]
-- [react-day-picker changelog](https://daypicker.dev/changelog) -- v9.14.0 latest [HIGH]
-- [Intl.NumberFormat MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat) -- Thai locale + Buddhist calendar built-in [HIGH]
-- [Noto Sans Thai - Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Thai) -- SIL Open Font License [HIGH]
-- [@fontsource/noto-sans-thai npm](https://www.npmjs.com/package/@fontsource/noto-sans-thai) -- self-hosted font package [HIGH]
-- [ETDA e-Tax Invoice standard](https://standard.etda.or.th/?page_id=4922) -- ขมธอ.3-2560 XML specification [MEDIUM]
-- [RD e-Filing portal](https://efiling.rd.go.th/rd-cms/) -- RD Prep program download, form filing [HIGH]
-- [Leceipt RD Prep guide](https://www.leceipt.com/docs/etax/%E0%B8%A0%E0%B8%87%E0%B8%943-rd-prep) -- pipe-delimited format confirmed [MEDIUM]
-- [FlowAccount developer portal](https://developers.flowaccount.com/) -- TypeScript SDK, Open API [MEDIUM]
-- [FlowAccount GitHub SDK](https://github.com/flowaccount/flowaccount-openapi-sdk) -- TypeScript-Node client available [MEDIUM]
-- [LLM vs OCR comparison (Koncile)](https://www.koncile.ai/en/ressources/claude-gpt-or-gemini-which-is-the-best-llm-for-invoice-extraction) -- 91-94% accuracy for LLM vision [MEDIUM]
-- [Thai receipt OCR research (ACM 2024)](https://dl.acm.org/doi/full/10.1145/3704391.3704407) -- 87.37% accuracy for traditional OCR on Thai receipts [MEDIUM]
+- [Thai bank statement formats (ASEAN NOW forum)](https://aseannow.com/topic/1297452-thai-banks-dont-give-out-statements-in-excel-or-csv-format/) -- confirms Thai banks primarily export PDF, some CSV [MEDIUM]
+- [SCB statement converter (GitHub)](https://github.com/shlomki/scb-statement-converter) -- confirms SCB exports PDF, needs conversion to CSV [MEDIUM]
+- [Bangkok Bank dStatement](https://www.bangkokbank.com/en/Personal/Digital-Banking/dStatement) -- confirms BBL offers digital statements [MEDIUM]
+- [XState v5 official docs](https://stately.ai/docs/xstate) -- reviewed for applicability, concluded overkill for this use case [HIGH]
+- [XState v5 announcement](https://stately.ai/blog/2023-12-01-xstate-v5) -- "smaller than ever" but still ~15kB gzipped [HIGH]
+- [XState with Next.js App Router (blog)](https://www.adammadojemu.com/blog/opinionated-approach-xstate-with-next-js-app-router-rsc) -- RSC integration adds complexity [MEDIUM]
+- [ofx-data-extractor npm](https://www.npmjs.com/package/ofx-data-extractor) -- v1.4.8, TypeScript, 1,273 weekly downloads. Viable if OFX needed later. [HIGH]
+- [ofx-js npm](https://www.npmjs.com/package/ofx-js) -- v0.2.0, last published 2 years ago, not recommended [MEDIUM]
+- [Fuse.js official site](https://www.fusejs.io/) -- lightweight fuzzy search, good but premature for this use case [HIGH]
+- [@react-pdf/renderer npm](https://www.npmjs.com/package/@react-pdf/renderer) -- v4.3.2 latest, confirmed compatible [HIGH]
+- [Prisma transactions docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions) -- atomic multi-model operations confirmed [HIGH]
+- [Existing BanChee invoice actions](file:///Users/ohmmingrath/Projects/banchee/app/(app)/apps/invoices/actions.ts) -- reference pattern for PDF generation [HIGH]
+- [Existing BanChee contacts model](file:///Users/ohmmingrath/Projects/banchee/models/contacts.ts) -- reusable for quotation recipient [HIGH]
 
 ---
-
-*Stack research: 2026-03-23*
+*Stack research for: BanChee v1.1 Document Workflow & Bank Reconciliation*
+*Researched: 2026-03-25*
+*Previous research: 2026-03-23 (v1.0 base stack)*
