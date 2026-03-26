@@ -67,7 +67,7 @@ Each task was committed atomically:
 1. **Task 1: Quotation PDF template with THSarabunNew** - `99e46c9` (feat)
 2. **Task 2: StatusBadge component for quotation statuses** - `78baaa0` (feat)
 
-**Plan metadata:** [pending] (docs: complete plan)
+**Plan metadata:** `fa31829` (docs: complete plan)
 
 ## Files Created/Modified
 - `app/(app)/apps/quotation/components/quotation-pdf.tsx` - A4 PDF template with 11 sections: company header, title, doc info, HR, party boxes, 7-column items table, totals, validity note, note, signatures, footer

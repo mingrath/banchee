@@ -55,6 +55,19 @@ A Thai SME owner can snap a receipt, have AI handle the rest, and generate month
 - ✓ Thai accountant Excel workbook export — v1.0
 - ✓ 7-step business profile setup wizard — v1.0
 - ✓ BanChee branding (logo, self-hosted page) — v1.0
+- ✓ Quotation system with line items, sequential numbering, PDF — v1.1
+- ✓ Document workflow chain: quotation → invoice → receipt → delivery note — v1.1
+- ✓ One-click document conversion with immutable source — v1.1
+- ✓ Invoice with due date, overdue detection, standalone + from quotation — v1.1
+- ✓ Receipt with partial payments (4 methods), auto-paid detection — v1.1
+- ✓ Delivery note (items only, no financials) — v1.1
+- ✓ Unified document list with chain badges and filters — v1.1
+- ✓ Bank reconciliation: CSV/Excel import with column mapping — v1.1
+- ✓ Bank presets (KBank, SCB, BBL) with B.E. date auto-detection — v1.1
+- ✓ Multi-factor matching (amount + date + description scoring) — v1.1
+- ✓ Match review UI with confirm/reject/create/skip — v1.1
+- ✓ README rebranded to BanChee (Thai + English) — v1.1
+- ✓ Docker production build verified — v1.1
 
 ### Active
 
@@ -84,7 +97,7 @@ A Thai SME owner can snap a receipt, have AI handle the rest, and generate month
 
 ## Context
 
-**Shipped v1.0** with 31,600+ LOC TypeScript across 229 commits.
+**Shipped v1.1** with 43,300+ LOC TypeScript across 300 commits.
 GitHub: https://github.com/mingrath/banchee
 
 **Tech stack:** Next.js 15 + Prisma + PostgreSQL 17 + shadcn/ui + LangChain (OpenAI/Gemini/Mistral)
@@ -128,19 +141,9 @@ GitHub: https://github.com/mingrath/banchee
 | Business profile in Settings model | Reuses existing key-value storage — no schema change needed | ✓ Good — zero migration risk |
 | Pipe-delimited TXT for RD export | Revenue Dept uses pipe-delimited format for most e-filing forms | ⚠ Revisit — needs validation against live RD portal |
 
-## Current Milestone: v1.1 Document Workflow
-
-**Goal:** Complete the Thai business document chain — quotation to invoice to receipt — plus bank reconciliation and ship-ready polish.
-
-**Target features:**
-- Quotation (ใบเสนอราคา) creation, management, and convert-to-invoice flow
-- Document workflow chain: quotation → invoice → receipt → tax invoice + delivery/billing notes
-- Bank statement import and auto-reconciliation with transactions
-- README rebrand, Docker production build test, visual QA
-
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-03-25 after v1.1 milestone start*
+*Last updated: 2026-03-26 after v1.1 milestone*
