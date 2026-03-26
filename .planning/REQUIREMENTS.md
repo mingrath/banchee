@@ -40,7 +40,7 @@ Requirements for v1.1 Document Workflow milestone. Each maps to roadmap phases.
 
 - [ ] **SHIP-01**: README.md rewritten from TaxHacker to BanChee — Thai + English, installation guide, feature overview, screenshots
 - [ ] **SHIP-02**: Docker production build verified end-to-end (build → migrate → seed → serve)
-- [ ] **SHIP-03**: Visual QA with real Thai receipts — AI extraction accuracy, PDF font rendering, report downloads
+- [x] **SHIP-03**: Visual QA with real Thai receipts — AI extraction accuracy, PDF font rendering, report downloads
 
 ## v2 Requirements
 
@@ -100,7 +100,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | BANK-06 | Phase 7 | Complete |
 | SHIP-01 | Phase 8 | Pending |
 | SHIP-02 | Phase 8 | Pending |
-| SHIP-03 | Phase 8 | Pending |
+| SHIP-03 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 23 total

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Document Workflow
 status: unknown
-stopped_at: Completed 07-04-PLAN.md (awaiting visual verification checkpoint)
-last_updated: "2026-03-26T08:32:44.822Z"
+stopped_at: Completed 08-02 Task 1 (awaiting visual verification checkpoint)
+last_updated: "2026-03-26T10:40:12.604Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 15
+  completed_plans: 14
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes -- zero accountant needed, zero tax penalties.
-**Current focus:** Phase 07 — bank-reconciliation
+**Current focus:** Phase 08 — ship-ready-polish
 
 ## Current Position
 
-Phase: 8
-Plan: Not started
+Phase: 08 (ship-ready-polish) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Plan: Not started
 | Phase 07 P02 | 3min | 2 tasks | 4 files |
 | Phase 07 P03 | 3min | 2 tasks | 3 files |
 | Phase 07 P04 | 4min | 2 tasks | 7 files |
+| Phase 08 P02 | 1min | 1 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,7 @@ Recent decisions affecting current work:
 - [Phase 07]: TIS-620 encoding detection auto-selects KBank preset
 - [Phase 07]: BankEntryWithTransaction type joins entries with picked Transaction fields via batch query
 - [Phase 07]: useTransition per action button isolates loading spinners in match review table
+- [Phase 08]: Smoke tests use curl HTTP status codes -- 200 or 302 both acceptable
 
 ### Pending Todos
 
@@ -115,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T08:19:20.642Z
-Stopped at: Completed 07-04-PLAN.md (awaiting visual verification checkpoint)
+Last session: 2026-03-26T10:40:12.596Z
+Stopped at: Completed 08-02 Task 1 (awaiting visual verification checkpoint)
 Resume file: None

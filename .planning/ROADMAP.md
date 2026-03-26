@@ -95,7 +95,7 @@ Plans:
 
 Plans:
 - [ ] 08-01-PLAN.md — README rebrand + Docker build verification
-- [ ] 08-02-PLAN.md — Visual QA: route smoke test + human verification
+- [x] 08-02-PLAN.md — Visual QA: route smoke test + human verification
 
 ## Progress
 
