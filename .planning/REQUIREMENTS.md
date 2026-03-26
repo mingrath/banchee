@@ -14,7 +14,7 @@ Requirements for v1.1 Document Workflow milestone. Each maps to roadmap phases.
 - [x] **QUOT-03**: Quotation stores validity period (default 30 days) and payment terms
 - [x] **QUOT-04**: User can generate quotation PDF with THSarabunNew (company header, line items table, totals, signature area)
 - [x] **QUOT-05**: User can view all quotations in a list with status badges (draft/sent/accepted/expired/converted)
-- [ ] **QUOT-06**: User can convert accepted quotation to tax invoice with one click (pre-fills all data, marks quotation as converted)
+- [x] **QUOT-06**: User can convert accepted quotation to tax invoice with one click (pre-fills all data, marks quotation as converted)
 
 ### Document Workflow (DOC)
 
@@ -23,7 +23,7 @@ Requirements for v1.1 Document Workflow milestone. Each maps to roadmap phases.
 - [x] **DOC-03**: User can create a receipt (ใบเสร็จรับเงิน) linked to an invoice, recording payment date and method
 - [x] **DOC-04**: User can create a delivery note (ใบส่งของ) linked to a quotation or invoice
 - [x] **DOC-05**: Document conversion is immutable — creates new record, never mutates source document
-- [ ] **DOC-06**: Each document type has its own PDF template with THSarabunNew and Section 86/4 compliance where applicable
+- [x] **DOC-06**: Each document type has its own PDF template with THSarabunNew and Section 86/4 compliance where applicable
 - [x] **DOC-07**: Status transitions follow explicit state machine (e.g., quotation: draft→sent→accepted→converted; invoice: draft→sent→paid→overdue)
 - [ ] **DOC-08**: User can view all documents in a unified list with type and status filters
 
@@ -83,13 +83,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | QUOT-03 | Phase 5 | Complete |
 | QUOT-04 | Phase 5 | Complete |
 | QUOT-05 | Phase 5 | Complete |
-| QUOT-06 | Phase 6 | Pending |
+| QUOT-06 | Phase 6 | Complete |
 | DOC-01 | Phase 5 | Complete |
 | DOC-02 | Phase 6 | Complete |
 | DOC-03 | Phase 6 | Complete |
 | DOC-04 | Phase 6 | Complete |
 | DOC-05 | Phase 6 | Complete |
-| DOC-06 | Phase 6 | Pending |
+| DOC-06 | Phase 6 | Complete |
 | DOC-07 | Phase 5 | Complete |
 | DOC-08 | Phase 6 | Pending |
 | BANK-01 | Phase 7 | Pending |
