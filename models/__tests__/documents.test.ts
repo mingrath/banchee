@@ -8,6 +8,7 @@ const { mockPrisma } = vi.hoisted(() => {
       findFirst: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+      aggregate: vi.fn(),
     },
     setting: {
       findFirst: vi.fn(),
@@ -26,7 +27,16 @@ vi.mock("@/services/thai-date", () => ({
   toBuddhistYear: vi.fn(() => 2569),
 }))
 
-import { createDocument, getDocumentById, listDocuments, updateDocumentStatus } from "@/models/documents"
+import {
+  createDocument,
+  getDocumentById,
+  listDocuments,
+  updateDocumentStatus,
+  createDocumentFromSource,
+  getDocumentsBySourceId,
+  sumReceiptAmountsForInvoice,
+  listDocumentsWithChain,
+} from "@/models/documents"
 
 const TEST_USER_ID = "user-uuid-123"
 
@@ -251,5 +261,219 @@ describe("updateDocumentStatus", () => {
     await expect(
       updateDocumentStatus(TEST_USER_ID, "nonexistent", "sent")
     ).rejects.toThrow("Document not found")
+  })
+})
+
+// ─── createDocumentFromSource ───────────────────────────────────
+describe("createDocumentFromSource", () => {
+  const sourceDoc = {
+    id: "source-doc-1",
+    userId: TEST_USER_ID,
+    documentType: "QUOTATION",
+    documentNumber: "QT-2569-0001",
+    status: "accepted",
+    contactId: "contact-1",
+    issuedAt: new Date("2026-01-01"),
+    validUntil: new Date("2026-02-01"),
+    paymentTerms: "30 days",
+    subtotal: 100000,
+    discountAmount: 5000,
+    vatRate: 700,
+    vatAmount: 6650,
+    total: 101650,
+    items: [{ description: "Widget", quantity: 2, unitPrice: 50000, amount: 100000 }],
+    sellerData: { name: "Seller Co" },
+    buyerData: { name: "Buyer Co" },
+    note: "Test note",
+  }
+
+  it("loads source doc, creates new doc with sourceDocumentId and copied data, all in $transaction", async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(sourceDoc)
+    mockPrisma.setting.findFirst.mockResolvedValue(null)
+    mockPrisma.setting.upsert.mockResolvedValue({ id: "s1", value: "1" })
+    const createdDoc = {
+      id: "new-doc-1",
+      documentType: "INVOICE",
+      documentNumber: "INV-2569-0001",
+      sourceDocumentId: "source-doc-1",
+    }
+    mockPrisma.document.create.mockResolvedValue(createdDoc)
+
+    const result = await createDocumentFromSource(TEST_USER_ID, "source-doc-1", "INVOICE")
+
+    expect(mockPrisma.$transaction).toHaveBeenCalledOnce()
+    expect(mockPrisma.document.findFirst).toHaveBeenCalledWith({
+      where: { id: "source-doc-1", userId: TEST_USER_ID },
+    })
+    expect(mockPrisma.document.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: TEST_USER_ID,
+        documentType: "INVOICE",
+        sourceDocumentId: "source-doc-1",
+        contactId: "contact-1",
+        subtotal: 100000,
+        discountAmount: 5000,
+        total: 101650,
+      }),
+    })
+    expect(result).toEqual(createdDoc)
+  })
+
+  it("throws when source document not found", async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null)
+
+    await expect(
+      createDocumentFromSource(TEST_USER_ID, "nonexistent", "INVOICE")
+    ).rejects.toThrow("Document not found")
+  })
+
+  it("applies overrides when provided", async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(sourceDoc)
+    mockPrisma.setting.findFirst.mockResolvedValue(null)
+    mockPrisma.setting.upsert.mockResolvedValue({ id: "s1", value: "1" })
+    mockPrisma.document.create.mockResolvedValue({ id: "new-doc-2" })
+
+    await createDocumentFromSource(TEST_USER_ID, "source-doc-1", "INVOICE", {
+      note: "Override note",
+    })
+
+    expect(mockPrisma.document.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        note: "Override note",
+      }),
+    })
+  })
+})
+
+// ─── getDocumentsBySourceId ─────────────────────────────────────
+describe("getDocumentsBySourceId", () => {
+  it("calls findMany with sourceDocumentId filter", async () => {
+    const docs = [{ id: "child-1" }]
+    mockPrisma.document.findMany.mockResolvedValue(docs)
+
+    const result = await getDocumentsBySourceId(TEST_USER_ID, "source-1")
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith({
+      where: {
+        userId: TEST_USER_ID,
+        sourceDocumentId: "source-1",
+      },
+      orderBy: { createdAt: "desc" },
+    })
+    expect(result).toEqual(docs)
+  })
+
+  it("includes documentType filter when provided", async () => {
+    mockPrisma.document.findMany.mockResolvedValue([])
+
+    await getDocumentsBySourceId(TEST_USER_ID, "source-1", "RECEIPT")
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith({
+      where: {
+        userId: TEST_USER_ID,
+        sourceDocumentId: "source-1",
+        documentType: "RECEIPT",
+      },
+      orderBy: { createdAt: "desc" },
+    })
+  })
+})
+
+// ─── sumReceiptAmountsForInvoice ────────────────────────────────
+describe("sumReceiptAmountsForInvoice", () => {
+  it("returns sum of paidAmount from non-voided receipts", async () => {
+    mockPrisma.document.aggregate.mockResolvedValue({
+      _sum: { paidAmount: 75000 },
+    })
+
+    const result = await sumReceiptAmountsForInvoice(TEST_USER_ID, "invoice-1")
+
+    expect(mockPrisma.document.aggregate).toHaveBeenCalledWith({
+      where: {
+        userId: TEST_USER_ID,
+        sourceDocumentId: "invoice-1",
+        documentType: "RECEIPT",
+        status: { not: "voided" },
+      },
+      _sum: { paidAmount: true },
+    })
+    expect(result).toBe(75000)
+  })
+
+  it("returns 0 when no receipts exist", async () => {
+    mockPrisma.document.aggregate.mockResolvedValue({
+      _sum: { paidAmount: null },
+    })
+
+    const result = await sumReceiptAmountsForInvoice(TEST_USER_ID, "invoice-1")
+
+    expect(result).toBe(0)
+  })
+})
+
+// ─── listDocumentsWithChain ─────────────────────────────────────
+describe("listDocumentsWithChain", () => {
+  it("calls findMany with include for sourceDocument and derivedDocuments", async () => {
+    const docs = [{ id: "doc-1", sourceDocument: null, derivedDocuments: [] }]
+    mockPrisma.document.findMany.mockResolvedValue(docs)
+
+    const result = await listDocumentsWithChain(TEST_USER_ID)
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: TEST_USER_ID }),
+        include: expect.objectContaining({
+          sourceDocument: expect.any(Object),
+          derivedDocuments: expect.any(Object),
+        }),
+        orderBy: { createdAt: "desc" },
+      })
+    )
+    expect(result).toEqual(docs)
+  })
+
+  it("applies dateFrom/dateTo filters on issuedAt", async () => {
+    mockPrisma.document.findMany.mockResolvedValue([])
+
+    const dateFrom = new Date("2026-01-01")
+    const dateTo = new Date("2026-03-31")
+    await listDocumentsWithChain(TEST_USER_ID, { dateFrom, dateTo })
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          issuedAt: { gte: dateFrom, lte: dateTo },
+        }),
+      })
+    )
+  })
+
+  it("applies contactId filter", async () => {
+    mockPrisma.document.findMany.mockResolvedValue([])
+
+    await listDocumentsWithChain(TEST_USER_ID, { contactId: "contact-1" })
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          contactId: "contact-1",
+        }),
+      })
+    )
+  })
+
+  it("applies documentType and status filters", async () => {
+    mockPrisma.document.findMany.mockResolvedValue([])
+
+    await listDocumentsWithChain(TEST_USER_ID, { documentType: "INVOICE", status: "draft" })
+
+    expect(mockPrisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          documentType: "INVOICE",
+          status: "draft",
+        }),
+      })
+    )
   })
 })
