@@ -32,9 +32,9 @@ Requirements for v1.1 Document Workflow milestone. Each maps to roadmap phases.
 - [x] **BANK-01**: User can import bank statements from CSV or Excel files with flexible column mapping UI
 - [x] **BANK-02**: System handles Thai bank CSV variations (TIS-620 encoding, Buddhist Era dates, inconsistent column positions)
 - [x] **BANK-03**: Auto-matching uses multi-factor scoring: amount (exact match) + date proximity + description similarity
-- [ ] **BANK-04**: User can review matched pairs in side-by-side UI: confirm, reject, or manually match
-- [ ] **BANK-05**: Unmatched bank entries can create new transactions directly from the reconciliation view
-- [ ] **BANK-06**: Reconciliation status tracked per statement (imported/in-progress/reconciled)
+- [x] **BANK-04**: User can review matched pairs in side-by-side UI: confirm, reject, or manually match
+- [x] **BANK-05**: Unmatched bank entries can create new transactions directly from the reconciliation view
+- [x] **BANK-06**: Reconciliation status tracked per statement (imported/in-progress/reconciled)
 
 ### Ship-Ready Polish (SHIP)
 
@@ -95,9 +95,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | BANK-01 | Phase 7 | Complete |
 | BANK-02 | Phase 7 | Complete |
 | BANK-03 | Phase 7 | Complete |
-| BANK-04 | Phase 7 | Pending |
-| BANK-05 | Phase 7 | Pending |
-| BANK-06 | Phase 7 | Pending |
+| BANK-04 | Phase 7 | Complete |
+| BANK-05 | Phase 7 | Complete |
+| BANK-06 | Phase 7 | Complete |
 | SHIP-01 | Phase 8 | Pending |
 | SHIP-02 | Phase 8 | Pending |
 | SHIP-03 | Phase 8 | Pending |

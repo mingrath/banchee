@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Document Workflow
 status: unknown
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-26T08:06:18.174Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-26T08:11:37.411Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 07 (bank-reconciliation) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Plan: 2 of 4
 | Phase 06 P03 | 8min | 2 tasks | 14 files |
 | Phase 06 P04 | 6min | 2 tasks | 9 files |
 | Phase 07 P01 | 5min | 2 tasks | 6 files |
+| Phase 07 P02 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 07]: BankEntry uses separate deposit/withdrawal columns per D-03
 - [Phase 07]: Encoding detection uses Node.js 23 built-in TextDecoder -- no new dependency
 - [Phase 07]: Amount matching uses Math.abs() on both sides for deposit/income sign handling
+- [Phase 07]: Statement status computed from entries: all resolved=reconciled, some=in_progress, none=imported per D-14
+- [Phase 07]: Auto-matching runs during import for all entries against all user transactions
+- [Phase 07]: File deduplication rejects duplicate uploads via fileHash check
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T08:06:18.171Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-26T08:11:37.409Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
