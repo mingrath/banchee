@@ -43,7 +43,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 Plans:
 - [x] 05-01-PLAN.md — Document model schema + migration + status workflow + CRUD (TDD)
 - [x] 05-02-PLAN.md — Zod schema + server actions (create, updateStatus, list)
-- [ ] 05-03-PLAN.md — Quotation PDF template + StatusBadge component
+- [x] 05-03-PLAN.md — Quotation PDF template + StatusBadge component
 - [ ] 05-04-PLAN.md — Quotation form, list, detail pages + visual verification
 
 ### Phase 6: Document Workflow Chain + Conversions
