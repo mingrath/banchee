@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Document Workflow
 status: unknown
-stopped_at: Completed 08-02 Task 1 (awaiting visual verification checkpoint)
-last_updated: "2026-03-26T10:40:12.604Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-26T11:17:28.629Z"
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Plan: 2 of 2
 | Phase 07 P03 | 3min | 2 tasks | 3 files |
 | Phase 07 P04 | 4min | 2 tasks | 7 files |
 | Phase 08 P02 | 1min | 1 tasks | 0 files |
+| Phase 08 P01 | 37min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase 07]: BankEntryWithTransaction type joins entries with picked Transaction fields via batch query
 - [Phase 07]: useTransition per action button isolates loading spinners in match review table
 - [Phase 08]: Smoke tests use curl HTTP status codes -- 200 or 302 both acceptable
+- [Phase 08]: Prisma.DbNull used instead of raw null for optional Json fields
+- [Phase 08]: vitest.config.ts and __tests__ excluded from tsconfig for production build
+- [Phase 08]: ExcelJS Buffer cast to ArrayBuffer for Node.js 23 compatibility
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:40:12.596Z
-Stopped at: Completed 08-02 Task 1 (awaiting visual verification checkpoint)
+Last session: 2026-03-26T11:17:28.627Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
