@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/db"
-import type { BankStatement, BankEntry } from "@/prisma/client"
+import type { BankStatement, BankEntry, Transaction } from "@/prisma/client"
 import type { ParsedBankEntry } from "@/services/bank-statement-parser"
 import { cache } from "react"
+
+export type BankEntryWithTransaction = BankEntry & {
+  matchedTransaction: Pick<Transaction, "id" | "name" | "total" | "issuedAt" | "type"> | null
+}
 
 // ─── Read Operations (React cache for request dedup) ──────────
 
@@ -172,3 +176,39 @@ export async function getBankEntryById(entryId: string): Promise<BankEntry | nul
     where: { id: entryId },
   })
 }
+
+/**
+ * Get all entries for a statement with their matched transactions.
+ * Used by the review page to display bank entry <-> transaction pairs.
+ */
+export const getEntriesWithTransactions = cache(
+  async (statementId: string): Promise<BankEntryWithTransaction[]> => {
+    const entries = await prisma.bankEntry.findMany({
+      where: { statementId },
+      orderBy: { date: "asc" },
+    })
+
+    // Collect all matched transaction IDs
+    const txIds = entries
+      .map((e) => e.transactionId)
+      .filter((id): id is string => id !== null)
+
+    // Batch fetch matched transactions
+    const transactions =
+      txIds.length > 0
+        ? await prisma.transaction.findMany({
+            where: { id: { in: txIds } },
+            select: { id: true, name: true, total: true, issuedAt: true, type: true },
+          })
+        : []
+
+    const txMap = new Map(transactions.map((tx) => [tx.id, tx]))
+
+    return entries.map((entry) => ({
+      ...entry,
+      matchedTransaction: entry.transactionId
+        ? txMap.get(entry.transactionId) ?? null
+        : null,
+    }))
+  }
+)
