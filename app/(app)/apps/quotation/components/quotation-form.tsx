@@ -217,9 +217,11 @@ export function QuotationForm({
                   <span className="font-medium">
                     {"\u0e2a\u0e32\u0e02\u0e32"}:
                   </span>{" "}
-                  {selectedContact.branch === "00000"
+                  {selectedContact.branch === "00000" || selectedContact.branch === "\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e43\u0e2b\u0e0d\u0e48"
                     ? "\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e43\u0e2b\u0e0d\u0e48"
-                    : `\u0e2a\u0e32\u0e02\u0e32\u0e17\u0e35\u0e48 ${parseInt(selectedContact.branch, 10)}`}
+                    : isNaN(parseInt(selectedContact.branch, 10))
+                      ? selectedContact.branch
+                      : `\u0e2a\u0e32\u0e02\u0e32\u0e17\u0e35\u0e48 ${parseInt(selectedContact.branch, 10)}`}
                 </p>
                 <p>
                   <span className="font-medium">
@@ -510,9 +512,11 @@ export function QuotationForm({
                 <span className="font-medium">
                   {"\u0e2a\u0e32\u0e02\u0e32"}:
                 </span>{" "}
-                {profile.branch === "00000"
+                {profile.branch === "00000" || profile.branch === "\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e43\u0e2b\u0e0d\u0e48"
                   ? "\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e43\u0e2b\u0e0d\u0e48"
-                  : `\u0e2a\u0e32\u0e02\u0e32\u0e17\u0e35\u0e48 ${parseInt(profile.branch, 10)}`}
+                  : isNaN(parseInt(profile.branch, 10))
+                    ? profile.branch
+                    : `\u0e2a\u0e32\u0e02\u0e32\u0e17\u0e35\u0e48 ${parseInt(profile.branch, 10)}`}
               </p>
               <p>
                 <span className="font-medium">
