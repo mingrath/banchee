@@ -38,7 +38,13 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   3. User can view all quotations in a list with status badges (draft/sent/accepted/expired/converted) and see validity/expiry at a glance
   4. Quotation status transitions follow an explicit state machine -- a converted quotation cannot be edited, an expired quotation cannot be sent
   5. Document model stores line items, seller/buyer data snapshots, and supports chain linking via sourceDocumentId
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Document model schema + migration + status workflow + CRUD (TDD)
+- [ ] 05-02-PLAN.md — Zod schema + server actions (create, updateStatus, list)
+- [ ] 05-03-PLAN.md — Quotation PDF template + StatusBadge component
+- [ ] 05-04-PLAN.md — Quotation form, list, detail pages + visual verification
 
 ### Phase 6: Document Workflow Chain + Conversions
 **Goal**: Users can convert documents along the Thai business chain -- quotation to invoice to receipt to tax invoice -- filling in data once and flowing it through the entire chain
@@ -82,10 +88,10 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 2. WHT + Tax Invoices + Filing Deadlines | v1.0 | 5/5 | Complete | 2026-03-24 |
 | 3. CIT + Tax Intelligence + Dashboard | v1.0 | 3/3 | Complete | 2026-03-24 |
 | 4. Export + Interoperability | v1.0 | 2/2 | Complete | 2026-03-24 |
-| 5. Document Model + Quotation System | v1.1 | 0/0 | Not started | - |
+| 5. Document Model + Quotation System | v1.1 | 0/4 | Planning complete | - |
 | 6. Document Workflow Chain + Conversions | v1.1 | 0/0 | Not started | - |
 | 7. Bank Reconciliation | v1.1 | 0/0 | Not started | - |
 | 8. Ship-Ready Polish | v1.1 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-03-25 after v1.1 roadmap creation*
+*Last updated: 2026-03-26 after Phase 5 planning complete*
