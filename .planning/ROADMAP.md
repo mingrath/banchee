@@ -59,7 +59,7 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Schema migration + status machines + conversion model functions (TDD)
+- [x] 06-01-PLAN.md — Schema migration + status machines + conversion model functions (TDD)
 - [ ] 06-02-PLAN.md — Invoice CRUD: form, actions, list, detail page, PDF
 - [ ] 06-03-PLAN.md — Receipt + delivery note apps with one-click creation and PDFs
 - [ ] 06-04-PLAN.md — Unified document list + quotation conversion buttons + payment progress

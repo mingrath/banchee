@@ -19,10 +19,10 @@ Requirements for v1.1 Document Workflow milestone. Each maps to roadmap phases.
 ### Document Workflow (DOC)
 
 - [x] **DOC-01**: New Document Prisma model with status tracking, line items JSON, and sourceDocumentId for chain linking
-- [ ] **DOC-02**: User can create an invoice/billing note (ใบแจ้งหนี้) — standalone or converted from quotation
-- [ ] **DOC-03**: User can create a receipt (ใบเสร็จรับเงิน) linked to an invoice, recording payment date and method
-- [ ] **DOC-04**: User can create a delivery note (ใบส่งของ) linked to a quotation or invoice
-- [ ] **DOC-05**: Document conversion is immutable — creates new record, never mutates source document
+- [x] **DOC-02**: User can create an invoice/billing note (ใบแจ้งหนี้) — standalone or converted from quotation
+- [x] **DOC-03**: User can create a receipt (ใบเสร็จรับเงิน) linked to an invoice, recording payment date and method
+- [x] **DOC-04**: User can create a delivery note (ใบส่งของ) linked to a quotation or invoice
+- [x] **DOC-05**: Document conversion is immutable — creates new record, never mutates source document
 - [ ] **DOC-06**: Each document type has its own PDF template with THSarabunNew and Section 86/4 compliance where applicable
 - [x] **DOC-07**: Status transitions follow explicit state machine (e.g., quotation: draft→sent→accepted→converted; invoice: draft→sent→paid→overdue)
 - [ ] **DOC-08**: User can view all documents in a unified list with type and status filters
@@ -85,10 +85,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | QUOT-05 | Phase 5 | Complete |
 | QUOT-06 | Phase 6 | Pending |
 | DOC-01 | Phase 5 | Complete |
-| DOC-02 | Phase 6 | Pending |
-| DOC-03 | Phase 6 | Pending |
-| DOC-04 | Phase 6 | Pending |
-| DOC-05 | Phase 6 | Pending |
+| DOC-02 | Phase 6 | Complete |
+| DOC-03 | Phase 6 | Complete |
+| DOC-04 | Phase 6 | Complete |
+| DOC-05 | Phase 6 | Complete |
 | DOC-06 | Phase 6 | Pending |
 | DOC-07 | Phase 5 | Complete |
 | DOC-08 | Phase 6 | Pending |

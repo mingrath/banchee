@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Document Workflow
 status: unknown
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-03-26T02:52:38.102Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-26T04:52:39.386Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 9
+  completed_plans: 5
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** A Thai SME owner can snap a receipt, have AI handle the rest, and generate monthly tax filings in 5 minutes -- zero accountant needed, zero tax penalties.
-**Current focus:** Phase 05 — document-model-quotation-system
+**Current focus:** Phase 06 — document-workflow-chain-conversions
 
 ## Current Position
 
-Phase: 6
-Plan: Not started
+Phase: 06 (document-workflow-chain-conversions) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: Not started
 | Phase 05 P01 | 5min | 2 tasks | 6 files |
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
 | Phase 05 P03 | 3min | 2 tasks | 2 files |
+| Phase 06 P01 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Line items parsed from FormData.getAll() separately from Zod validation -- Zod cannot handle dynamic array indices from FormData
 - [Phase 05]: Baht-to-satang conversion at action boundary with Math.round(parseFloat() * 100) -- prevents satang double-division pitfall
 - [Phase 05]: QuotationPDF uses local formatAmount with direct satang/100 for self-contained PDF rendering
+- [Phase 06]: overdue is display-only status -- computed lazily by getEffectiveInvoiceStatus(), not stored in DB
+- [Phase 06]: createDocumentFromSource does NOT update source status -- caller handles for reusability
+- [Phase 06]: Invoice form uses dueDate instead of validityDays -- invoices have payment deadlines, not expiry
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T01:52:41.641Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-03-26T04:52:39.385Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
