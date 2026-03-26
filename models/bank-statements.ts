@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db"
+import { Prisma } from "@/prisma/client"
 import type { BankStatement, BankEntry, Transaction } from "@/prisma/client"
 import type { ParsedBankEntry } from "@/services/bank-statement-parser"
 import { cache } from "react"
@@ -98,7 +99,7 @@ export async function updateEntryMatch(
       matchStatus: data.matchStatus,
       transactionId: data.transactionId ?? null,
       matchScore: data.matchScore ?? null,
-      matchReasons: data.matchReasons ?? null,
+      matchReasons: data.matchReasons ?? Prisma.DbNull,
     },
   })
 }
