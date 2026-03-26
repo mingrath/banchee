@@ -21,7 +21,7 @@ created: 2026-03-25
 | Preset | new-york, base color zinc, CSS variables enabled, RSC enabled |
 | Component library | Radix UI primitives (12 packages installed) |
 | Icon library | Lucide React ^0.475.0 |
-| Font (UI) | Noto Sans Thai (weights 400, 500, 600, 700) via `next/font/google` |
+| Font (UI) | Noto Sans Thai (weights 500, 700) via `next/font/google` |
 | Font (PDF) | THSarabunNew (normal + bold) via `@react-pdf/renderer` font registration |
 
 **Source:** `components.json`, `app/layout.tsx` (font config), `exports/pdf/fonts.ts` (PDF font)
@@ -52,13 +52,15 @@ Exceptions: none -- matches existing tax-invoice form spacing exactly
 
 ### UI Typography (Noto Sans Thai)
 
+Two weights only: **500 (medium)** for all body/label/header text and **700 (bold)** for the page heading.
+
 | Role | Size | Weight | Line Height | Tailwind Classes |
 |------|------|--------|-------------|-----------------|
 | Page heading | 30px (1.875rem) | 700 (bold) | 1.2 | `text-3xl font-bold tracking-tight` |
-| Card title | 18px (1.125rem) | 600 (semibold) | 1.4 | `text-lg` (CardTitle component) |
+| Card title | 18px (1.125rem) | 500 (medium) | 1.4 | `text-lg font-medium` (CardTitle component) |
 | Body / form labels | 14px (0.875rem) | 500 (medium) | 1.5 | `text-sm font-medium` |
 | Table header | 14px (0.875rem) | 500 (medium) | 1.5 | `text-sm font-medium text-muted-foreground` |
-| Status badge | 12px (0.75rem) | 600 (semibold) | 1.0 | `text-xs font-semibold` (Badge component) |
+| Status badge | 12px (0.75rem) | 500 (medium) | 1.0 | `text-xs font-medium` (Badge component) |
 
 ### PDF Typography (THSarabunNew)
 
@@ -127,7 +129,7 @@ Status badges use the existing `Badge` component with `className` overrides for 
 | `Table` / `TableHeader` / `TableRow` / `TableHead` / `TableBody` / `TableCell` | `components/ui/table.tsx` | Quotation list view |
 | `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` | `components/ui/select.tsx` | Status filter in list view |
 | `Skeleton` | `components/ui/skeleton.tsx` | Loading state for quotation list |
-| `Tooltip` | `components/ui/tooltip.tsx` | Action button tooltips in list (download, status change) |
+| `Tooltip` | `components/ui/tooltip.tsx` | Action button tooltips in list (download, status change), line item delete button |
 | `Switch` | `components/ui/switch.tsx` | VAT toggle (include/exclude 7% VAT) |
 | `ContactAutocomplete` | `components/contacts/contact-autocomplete.tsx` | Buyer selection with search |
 | `ContactInlineCreate` | `components/contacts/contact-inline-create.tsx` | Inline new contact creation dialog |
@@ -222,7 +224,7 @@ Layout clones `tax-invoice/page.tsx`:
 | Interaction | Behavior |
 |------------|----------|
 | "+ เพิ่มรายการ" click | Append new empty row: `{ description: "", quantity: "1", unit: "ชิ้น", unitPrice: "", discount: "0" }`. Focus on the new row's description input. |
-| Trash icon click | Remove row if items.length > 1. If only 1 row remains, button is `disabled`. No confirmation needed. |
+| Trash icon click | Remove row if items.length > 1. If only 1 row remains, button is `disabled`. No confirmation needed. The delete button MUST use `<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="ลบรายการ">...</Button></TooltipTrigger><TooltipContent>ลบรายการ</TooltipContent></Tooltip>`. |
 | Amount column | Auto-calculated: `(qty * unitPrice) - discount`. Read-only display using `formatCurrency()`. |
 | Quantity/price/discount change | Totals section recalculates via `useMemo` on every keystroke (same pattern as tax-invoice). |
 
@@ -303,6 +305,7 @@ Layout clones `tax-invoice/page.tsx`:
 | Validity default label | ระยะเวลาเสนอราคา (วัน) | Input label |
 | Validity default value | 30 | Default number input value |
 | Document number auto-format | QT-2568-0001 | Display format per D-01 |
+| Delete line item tooltip | ลบรายการ | Tooltip on trash icon button |
 
 ---
 
@@ -337,6 +340,29 @@ Class: `sm:grid-cols-[1fr_80px_80px_100px_100px_100px_40px]`
 
 Mobile: Stack vertically, each field gets its own row (`grid-cols-1`).
 
+### Line Item Delete Button Accessibility
+
+The trash icon button in each line item row MUST include both `aria-label` and a wrapping `Tooltip`:
+
+```tsx
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="ลบรายการ"
+        disabled={items.length <= 1}
+        onClick={() => removeItem(index)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>ลบรายการ</TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
 ---
 
 ## PDF Layout Contract
@@ -359,24 +385,24 @@ Page margins: `paddingTop: 30, paddingBottom: 30, paddingHorizontal: 40` (matche
 | เลขที่: QT-2568-0001                      วันที่: 25 มีนาคม 2568  |
 | ────────────────────────────────────────────────────────────────── |
 |                                                                  |
-| ┌─ ผู้เสนอราคา (Seller) ──┐  ┌─ ผู้รับราคา (Buyer) ────┐         |
-| │ Company Name             │  │ Buyer Name              │         |
-| │ Address                  │  │ Address                  │         |
-| │ Tax ID: XXXXX            │  │ Tax ID: XXXXX            │         |
-| │ [สำนักงานใหญ่]            │  │ [สำนักงานใหญ่]            │         |
-| └──────────────────────────┘  └──────────────────────────┘         |
+| +-- ผู้เสนอราคา (Seller) --+  +-- ผู้รับราคา (Buyer) ----+         |
+| | Company Name             |  | Buyer Name              |         |
+| | Address                  |  | Address                  |         |
+| | Tax ID: XXXXX            |  | Tax ID: XXXXX            |         |
+| | [สำนักงานใหญ่]            |  | [สำนักงานใหญ่]            |         |
+| +--------------------------+  +--------------------------+         |
 |                                                                  |
-| ┌────┬──────────────┬──────┬──────┬──────────┬────────┬─────────┐ |
-| │ #  │ รายละเอียด    │จำนวน │ หน่วย│ ราคา/หน่วย│ ส่วนลด │จำนวนเงิน│ |
-| ├────┼──────────────┼──────┼──────┼──────────┼────────┼─────────┤ |
-| │ 1  │ Item desc    │  2   │ ชิ้น │ 5,000.00 │   0.00 │10,000.00│ |
-| │ 2  │ Service desc │  1   │ ครั้ง│ 3,000.00 │ 500.00 │ 2,500.00│ |
-| └────┴──────────────┴──────┴──────┴──────────┴────────┴─────────┘ |
+| +----+--------------+------+------+----------+--------+---------+ |
+| | #  | รายละเอียด    |จำนวน | หน่วย| ราคา/หน่วย| ส่วนลด |จำนวนเงิน| |
+| +----+--------------+------+------+----------+--------+---------+ |
+| | 1  | Item desc    |  2   | ชิ้น | 5,000.00 |   0.00 |10,000.00| |
+| | 2  | Service desc |  1   | ครั้ง| 3,000.00 | 500.00 | 2,500.00| |
+| +----+--------------+------+------+----------+--------+---------+ |
 |                                                                  |
 |                          มูลค่าสินค้า/บริการ    12,500.00         |
 |                          ส่วนลดรวม               500.00          |
 |                          ภาษีมูลค่าเพิ่ม 7%       840.00          |
-|                          ─────────────────────────────            |
+|                          ---------------------------------        |
 |                          รวมทั้งสิ้น          12,840.00 บาท       |
 |                                                                  |
 | ใบเสนอราคานี้มีอายุ 30 วัน (ถึงวันที่ 24 เมษายน 2568)              |
