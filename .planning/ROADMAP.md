@@ -47,7 +47,7 @@ Plans:
 - [ ] 05-04-PLAN.md — Quotation form, list, detail pages + visual verification
 
 ### Phase 6: Document Workflow Chain + Conversions
-**Goal**: Users can convert documents along the Thai business chain -- quotation to invoice to receipt to tax invoice -- filling in data once and flowing it through the entire chain
+**Goal**: Users can convert documents along the Thai business chain -- quotation to invoice to receipt -- filling in data once and flowing it through the entire chain
 **Depends on**: Phase 5
 **Requirements**: QUOT-06, DOC-02, DOC-03, DOC-04, DOC-05, DOC-06, DOC-08
 **Success Criteria** (what must be TRUE):
@@ -56,7 +56,14 @@ Plans:
   3. User can create a delivery note linked to a quotation or invoice
   4. Every conversion creates a new document record -- the source document is never mutated, only its status changes
   5. User can view all documents (quotations, invoices, receipts, delivery notes) in a unified list with type and status filters, and each document shows its chain links
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration + status machines + conversion model functions (TDD)
+- [ ] 06-02-PLAN.md — Invoice CRUD: form, actions, list, detail page, PDF
+- [ ] 06-03-PLAN.md — Receipt + delivery note apps with one-click creation and PDFs
+- [ ] 06-04-PLAN.md — Unified document list + quotation conversion buttons + payment progress
+- [ ] 06-05-PLAN.md — Visual verification of full document workflow chain
 
 ### Phase 7: Bank Reconciliation
 **Goal**: Users can import bank statements and match bank entries against BanChee transactions to verify that recorded income/expenses match actual bank activity
@@ -89,9 +96,9 @@ Plans:
 | 3. CIT + Tax Intelligence + Dashboard | v1.0 | 3/3 | Complete | 2026-03-24 |
 | 4. Export + Interoperability | v1.0 | 2/2 | Complete | 2026-03-24 |
 | 5. Document Model + Quotation System | v1.1 | 0/4 | Planning complete | - |
-| 6. Document Workflow Chain + Conversions | v1.1 | 0/0 | Not started | - |
+| 6. Document Workflow Chain + Conversions | v1.1 | 0/5 | Planning complete | - |
 | 7. Bank Reconciliation | v1.1 | 0/0 | Not started | - |
 | 8. Ship-Ready Polish | v1.1 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-03-26 after Phase 5 planning complete*
+*Last updated: 2026-03-26 after Phase 6 planning complete*
